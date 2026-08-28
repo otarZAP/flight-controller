@@ -1,0 +1,1135 @@
+<title>Perfboard Flight Controller</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;450;500;600&family=Saira+Semi+Condensed:wght@500;600;700&display=swap">
+<style>
+:root{
+  --ground:#F1F4F3; --panel:#FFFFFF; --panel-2:#E7EDEB; --sunk:#DDE5E3;
+  --ink:#141F1D; --ink-2:#495A56; --ink-3:#778782; --rule:#C9D4D1;
+  --quiet:#0E5C66; --quiet-soft:#D8EAEC;
+  --hot:#AF4720; --hot-soft:#F7E3D9;
+  --danger:#912519; --pass:#2C6B45; --caution:#8C6206;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1514; --panel:#161E1C; --panel-2:#1D2725; --sunk:#111917;
+    --ink:#E5EDEA; --ink-2:#A6B6B2; --ink-3:#798985; --rule:#2A3734;
+    --quiet:#4CBECA; --quiet-soft:#122F31;
+    --hot:#E5835A; --hot-soft:#301E18;
+    --danger:#E4705C; --pass:#6DB78A; --caution:#D2A03C;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1514; --panel:#161E1C; --panel-2:#1D2725; --sunk:#111917;
+  --ink:#E5EDEA; --ink-2:#A6B6B2; --ink-3:#798985; --rule:#2A3734;
+  --quiet:#4CBECA; --quiet-soft:#122F31;
+  --hot:#E5835A; --hot-soft:#301E18;
+  --danger:#E4705C; --pass:#6DB78A; --caution:#D2A03C;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.62; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1220px; margin:0 auto; padding:0 28px 96px}
+
+.mast{border-bottom:1px solid var(--rule); padding:56px 0 30px; margin-bottom:44px}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); margin:0;
+}
+.mast h1{
+  font-family:"Saira Semi Condensed",Impact,sans-serif; font-weight:700;
+  font-size:clamp(42px,7vw,76px); line-height:.98; letter-spacing:-.01em;
+  margin:14px 0 0; text-wrap:balance;
+}
+.mast h1 em{font-style:normal; color:var(--ink-3)}
+.mast .lede{max-width:64ch; margin:20px 0 0; font-size:18.5px; color:var(--ink-2); line-height:1.55}
+.strip{
+  display:flex; flex-wrap:wrap; margin-top:34px;
+  border:1px solid var(--rule); border-radius:3px; overflow:hidden; background:var(--panel);
+}
+.strip > div{flex:1 1 160px; padding:12px 16px; border-right:1px solid var(--rule)}
+.strip > div:last-child{border-right:0}
+.strip dt{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-3); margin:0 0 3px;
+}
+.strip dd{margin:0; font-family:"Saira Semi Condensed",sans-serif; font-weight:600; font-size:19px}
+
+.shell{display:grid; grid-template-columns:186px minmax(0,1fr); gap:56px; align-items:start}
+@media (max-width:900px){ .shell{grid-template-columns:1fr; gap:0} .rail{display:none} }
+.rail{position:sticky; top:28px}
+.rail p{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-3); margin:0 0 12px; padding-bottom:10px;
+  border-bottom:1px solid var(--rule);
+}
+.rail a{
+  display:grid; grid-template-columns:26px 1fr; gap:6px; padding:5px 0;
+  color:var(--ink-2); text-decoration:none; font-size:13.5px; line-height:1.35;
+}
+.rail a i{font-style:normal; font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3)}
+.rail a:hover, .rail a:hover i{color:var(--quiet)}
+.rail a:focus-visible{outline:2px solid var(--quiet); outline-offset:3px}
+
+section{margin:0 0 74px; scroll-margin-top:24px}
+.shead{display:flex; align-items:baseline; gap:14px; border-top:2px solid var(--ink); padding-top:12px; margin-bottom:22px}
+.shead b{
+  font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600;
+  color:var(--ink-3); letter-spacing:.06em;
+}
+.shead h2{
+  font-family:"Saira Semi Condensed",sans-serif; font-weight:600;
+  font-size:clamp(27px,3.4vw,36px); line-height:1.08; margin:0; letter-spacing:-.005em;
+  text-wrap:balance;
+}
+h3{font-family:"Saira Semi Condensed",sans-serif; font-weight:600; font-size:21px; margin:36px 0 10px}
+p{max-width:68ch; margin:0 0 15px}
+ul,ol{max-width:68ch; margin:0 0 15px; padding-left:20px}
+li{margin-bottom:7px}
+li::marker{color:var(--ink-3)}
+a{color:var(--quiet)}
+code{
+  font-family:"IBM Plex Mono",monospace; font-size:.875em; background:var(--sunk);
+  padding:1px 5px; border-radius:2px;
+}
+
+.note{
+  border:1px solid var(--rule); border-left:3px solid var(--quiet); background:var(--panel);
+  padding:16px 20px; margin:24px 0; border-radius:0 3px 3px 0; max-width:74ch;
+}
+.note.hot{border-left-color:var(--hot)}
+.note.danger{border-left-color:var(--danger)}
+.note.pass{border-left-color:var(--pass)}
+.note h4{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; margin:0 0 7px; color:var(--quiet);
+}
+.note.hot h4{color:var(--hot)}
+.note.danger h4{color:var(--danger)}
+.note.pass h4{color:var(--pass)}
+.note p{max-width:none}
+.note p:last-child{margin-bottom:0}
+
+.placard{
+  border:2px solid var(--danger); background:var(--panel); border-radius:3px;
+  padding:15px 20px; margin:26px 0; max-width:74ch; display:flex; gap:16px; align-items:flex-start;
+}
+.placard b{
+  font-family:"Saira Semi Condensed",sans-serif; font-weight:700; font-size:15px;
+  letter-spacing:.1em; color:var(--danger); white-space:nowrap; padding-top:2px;
+}
+.placard p{margin:0; max-width:none; font-size:15.5px}
+
+.tw{overflow-x:auto; margin:24px 0; border:1px solid var(--rule); border-radius:3px; background:var(--panel)}
+table{border-collapse:collapse; width:100%; font-size:14.5px; min-width:540px}
+th,td{text-align:left; padding:10px 15px; border-bottom:1px solid var(--rule); vertical-align:top}
+thead th{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink-3); font-weight:500; background:var(--panel-2); white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:0}
+.mono{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+.nw{white-space:nowrap}
+.pill{
+  display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10.5px;
+  letter-spacing:.08em; text-transform:uppercase; padding:2px 7px; border-radius:2px;
+  border:1px solid currentColor; white-space:nowrap;
+}
+.pill.q{color:var(--quiet); background:var(--quiet-soft)}
+.pill.h{color:var(--hot); background:var(--hot-soft)}
+.pill.d{color:var(--danger)}
+.pill.p{color:var(--pass)}
+.pill.c{color:var(--caution)}
+
+figure{margin:30px 0; padding:0}
+figure svg{display:block; width:100%; height:auto; color:var(--ink)}
+.figbox{border:1px solid var(--rule); border-radius:3px; background:var(--panel); padding:22px 20px 16px; overflow-x:auto}
+figcaption{
+  margin-top:14px; padding-top:12px; border-top:1px solid var(--rule);
+  font-size:13.5px; color:var(--ink-2); line-height:1.55; max-width:78ch;
+}
+figcaption b{color:var(--ink); font-weight:600}
+
+.check{list-style:none; padding:0; max-width:74ch}
+.check li{display:grid; grid-template-columns:20px 1fr; gap:13px; padding:11px 0; border-bottom:1px solid var(--rule); margin:0}
+.check li:last-child{border-bottom:0}
+.check i{display:block; width:15px; height:15px; border:1.5px solid var(--ink-3); border-radius:2px; margin-top:6px}
+.check b{font-family:"Saira Semi Condensed",sans-serif; font-weight:600; font-size:17px; display:block}
+.check span{font-size:14.5px; color:var(--ink-2)}
+
+.grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:18px; margin:24px 0}
+.card{border:1px solid var(--rule); background:var(--panel); border-radius:3px; padding:18px 20px}
+.card h4{font-family:"Saira Semi Condensed",sans-serif; font-size:18px; font-weight:600; margin:0 0 8px}
+.card p{font-size:14.5px; margin:0; color:var(--ink-2); max-width:none}
+
+footer{border-top:1px solid var(--rule); margin-top:24px; padding-top:22px; color:var(--ink-3); font-size:13.5px}
+footer p{max-width:74ch}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow">Build manual &middot; Revision B &middot; 2026-08-28</p>
+  <h1>Perfboard<br>Flight Controller<em>.</em></h1>
+  <p class="lede">A modular flight stack built from parts: one board for the brains, one board per motor for the power, and a bought radio link so the one safety-critical thing you don't build is the one already solved. Bench first, 250&nbsp;quad second, VTOL only once the quad has earned it.</p>
+  <div class="strip">
+    <div><dt>Phase</dt><dd>01 &mdash; Perfboard</dd></div>
+    <div><dt>Brain</dt><dd>Teensy 4.1</dd></div>
+    <div><dt>Firmware base</dt><dd>dRehmFlight, native</dd></div>
+    <div><dt>RC link</dt><dd>ExpressLRS</dd></div>
+    <div><dt>Test airframe</dt><dd>250&nbsp;mm quad</dd></div>
+    <div><dt>End target</dt><dd>VTOL</dd></div>
+  </div>
+</header>
+
+<div class="shell">
+
+<nav class="rail">
+  <p>Sequence</p>
+  <a href="#s00"><i>00</i> Two domains</a>
+  <a href="#s01"><i>01</i> Parts &amp; board choice</a>
+  <a href="#s02"><i>02</i> The port you deleted</a>
+  <a href="#s03"><i>03</i> Perfboard layout</a>
+  <a href="#s04"><i>04</i> Grounding</a>
+  <a href="#s05"><i>05</i> IMU soft mount</a>
+  <a href="#s06"><i>06</i> Motor output</a>
+  <a href="#s07"><i>07</i> Radio link</a>
+  <a href="#s08"><i>08</i> Safety systems</a>
+  <a href="#s09"><i>09</i> Bench bring-up</a>
+  <a href="#s10"><i>10</i> Custom ESC</a>
+  <a href="#s11"><i>11</i> Phase 2: PCB</a>
+  <a href="#s12"><i>&mdash;</i> Settled &amp; open</a>
+</nav>
+
+<main>
+
+<!-- ============ 00 ============ -->
+<section id="s00">
+  <div class="shead"><b>00</b><h2>Two domains, and the four wires between them</h2></div>
+
+  <p>Every decision in this build comes out of one idea, so it is worth stating before anything else. There are two electrical worlds on this aircraft and they do not mix.</p>
+
+  <p>The <strong>quiet domain</strong> is logic: a 3.3&nbsp;V microcontroller, an IMU resolving milli-g, a serial receiver. The <strong>power domain</strong> is a 4S pack shoving a hundred amps of peak phase current through six MOSFETs per motor, switching at tens of kilohertz with nanosecond edges. If those two worlds share a return path, the second one writes noise directly onto the first one's ground reference &mdash; and your gyro reads it as motion.</p>
+
+  <p>That is the whole thesis. Separate boards, star grounding, the soft-mounted IMU, the keep-out on the perfboard, the phase-2 PCB layout rules &mdash; every one of them is the same idea applied at a different scale.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 900 420" role="img" aria-label="System block diagram showing the quiet logic domain and the power domain, connected only by one 5 volt feed and four motor signal lines, with a single-point ground tie at the battery negative terminal.">
+        <defs>
+          <marker id="aq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--hot)"/>
+          </marker>
+          <marker id="aqc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--quiet)"/>
+          </marker>
+        </defs>
+
+        <!-- domain bands -->
+        <rect x="150" y="18" width="740" height="150" rx="3" fill="var(--quiet-soft)"/>
+        <rect x="150" y="246" width="740" height="132" rx="3" fill="var(--hot-soft)"/>
+        <text x="164" y="36" font-family="IBM Plex Mono, monospace" font-size="10.5" letter-spacing="1.4" fill="var(--quiet)">QUIET DOMAIN &mdash; LOGIC + SIGNAL</text>
+        <text x="164" y="370" font-family="IBM Plex Mono, monospace" font-size="10.5" letter-spacing="1.4" fill="var(--hot)">POWER DOMAIN &mdash; PACK + PHASE CURRENT</text>
+
+        <!-- battery -->
+        <rect x="16" y="176" width="104" height="62" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="68" y="201" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="15" font-weight="600" fill="currentColor">4S LiPo</text>
+        <text x="68" y="219" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">14.8&ndash;16.8 V</text>
+
+        <!-- RX -->
+        <rect x="176" y="58" width="100" height="52" rx="3" fill="var(--panel)" stroke="var(--quiet)" stroke-width="1.5"/>
+        <text x="226" y="80" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="15" font-weight="600" fill="currentColor">ELRS RX</text>
+        <text x="226" y="97" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">SBUS mode</text>
+
+        <!-- buck -->
+        <rect x="176" y="126" width="100" height="42" rx="3" fill="var(--panel)" stroke="var(--quiet)" stroke-width="1.5"/>
+        <text x="226" y="145" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="14" font-weight="600" fill="currentColor">5 V buck</text>
+        <text x="226" y="160" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">2 A, own feed</text>
+
+        <!-- FC -->
+        <rect x="352" y="46" width="188" height="122" rx="3" fill="var(--panel)" stroke="var(--quiet)" stroke-width="2"/>
+        <text x="446" y="68" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="16" font-weight="700" fill="currentColor">FC BOARD</text>
+        <rect x="368" y="80" width="72" height="40" rx="2" fill="none" stroke="currentColor" stroke-width="1"/>
+        <text x="404" y="97" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">Teensy 4.1</text>
+        <text x="404" y="111" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">2 kHz loop</text>
+        <rect x="452" y="80" width="72" height="40" rx="2" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 2"/>
+        <text x="488" y="97" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">IMU</text>
+        <text x="488" y="111" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">soft-mount</text>
+        <text x="446" y="142" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">3.3 V logic &middot; NOT 5 V tolerant</text>
+        <text x="446" y="157" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">bare metal &mdash; no RTOS, no port</text>
+
+        <!-- ESCs -->
+        <rect x="628" y="256" width="112" height="112" rx="3" fill="var(--panel)" stroke="var(--hot)" stroke-width="2"/>
+        <text x="684" y="277" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="15" font-weight="700" fill="currentColor">ESC &times; 4</text>
+        <text x="684" y="296" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-3)">one per motor</text>
+        <line x1="644" y1="308" x2="724" y2="308" stroke="var(--rule)" stroke-width="1"/>
+        <text x="684" y="325" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">AM32 firmware</text>
+        <text x="684" y="341" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">own signal-loss</text>
+        <text x="684" y="355" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">timeout</text>
+
+        <!-- motors -->
+        <rect x="792" y="272" width="82" height="80" rx="3" fill="none" stroke="var(--hot)" stroke-width="1.5"/>
+        <text x="833" y="304" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="15" font-weight="600" fill="currentColor">Motors</text>
+        <text x="833" y="322" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">&times; 4, stock</text>
+
+        <!-- power bus -->
+        <rect x="352" y="286" width="188" height="52" rx="3" fill="var(--panel)" stroke="var(--hot)" stroke-width="1.5"/>
+        <text x="446" y="308" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="15" font-weight="600" fill="currentColor">Power bus</text>
+        <text x="446" y="325" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">XT60 + bulk caps</text>
+
+        <!-- ---- edges ---- -->
+        <!-- battery to buck -->
+        <path d="M120 196 L148 196 L148 147 L172 147" fill="none" stroke="var(--quiet)" stroke-width="1.5" marker-end="url(#aqc)"/>
+        <text x="128" y="140" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--quiet)">16.8 V</text>
+        <!-- buck to FC -->
+        <line x1="276" y1="147" x2="348" y2="120" stroke="var(--quiet)" stroke-width="2.5" marker-end="url(#aqc)"/>
+        <text x="286" y="121" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--quiet)">5 V</text>
+        <!-- RX to FC -->
+        <line x1="276" y1="84" x2="348" y2="84" stroke="var(--quiet)" stroke-width="1.5" marker-end="url(#aqc)"/>
+        <text x="282" y="76" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--quiet)">SBUS 100k</text>
+        <!-- battery to power bus -->
+        <path d="M120 224 L240 224 L240 312 L348 312" fill="none" stroke="var(--hot)" stroke-width="4" marker-end="url(#ah)"/>
+        <text x="250" y="304" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--hot)">100 A pk</text>
+        <!-- power bus to ESC -->
+        <line x1="540" y1="312" x2="624" y2="312" stroke="var(--hot)" stroke-width="4" marker-end="url(#ah)"/>
+        <!-- ESC to motors -->
+        <line x1="740" y1="312" x2="788" y2="312" stroke="var(--hot)" stroke-width="3" marker-end="url(#ah)"/>
+        <text x="742" y="303" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--hot)">3&oslash;</text>
+
+        <!-- the crossing: FC signal to ESC -->
+        <path d="M540 130 L584 130 L584 282 L624 282" fill="none" stroke="var(--quiet)" stroke-width="2" stroke-dasharray="6 3" marker-end="url(#aqc)"/>
+        <circle cx="584" cy="206" r="15" fill="var(--panel)" stroke="var(--quiet)" stroke-width="1.5"/>
+        <text x="584" y="210" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" font-weight="600" fill="var(--quiet)">4&times;</text>
+        <text x="602" y="196" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--quiet)">OneShot125</text>
+        <text x="602" y="209" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--quiet)">signal only</text>
+        <text x="602" y="222" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--quiet)">no ground loop</text>
+
+        <!-- star ground -->
+        <circle cx="68" cy="256" r="6" fill="currentColor"/>
+        <line x1="68" y1="238" x2="68" y2="250" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M68 262 L68 296 L348 296" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 3"/>
+        <path d="M68 262 L68 336 L200 336 L200 168" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 3"/>
+        <text x="16" y="278" font-family="IBM Plex Mono, monospace" font-size="10" font-weight="600" fill="currentColor">STAR GND</text>
+        <text x="16" y="292" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">one tie point</text>
+      </svg>
+    </div>
+    <figcaption><b>Only two things cross the boundary:</b> one 5&nbsp;V feed taken from its own buck, and four signal lines that carry no return current. The pack's 100&nbsp;A of phase current never shares copper with the IMU, and both grounds meet at exactly one point &mdash; the battery negative. Every layout rule later in this manual exists to keep this picture true in the physical build.</figcaption>
+  </figure>
+
+  <div class="note">
+    <h4>Why perfboard before PCB</h4>
+    <p>On perfboard, a noise problem is fixed by moving a wire. On a PCB it is fixed by respinning a board and waiting two weeks. Build the version you can debug first, then commit the proven layout to copper &mdash; the integrated board is <a href="#s11">phase 2</a>, and its job is to productize something that already flies, not to solve firmware and mixed-signal layout at the same time.</p>
+  </div>
+</section>
+
+<!-- ============ 01 ============ -->
+<section id="s01">
+  <div class="shead"><b>01</b><h2>Parts, and why these ones</h2></div>
+
+  <h3>The brain: Teensy 4.1</h3>
+  <p>dRehmFlight is written for, documented against, and flown on the Teensy 4.0/4.1. Running it on the board it was written for is not a compromise &mdash; it is the option that removes the most work, and it removes the riskiest work. The pin map, the wiring diagrams, and every piece of community troubleshooting all target this exact part.</p>
+
+  <ul>
+    <li><strong>600&nbsp;MHz Cortex-M7, bare metal.</strong> No RTOS, no scheduler, no second core to reason about. A loop that takes 400&nbsp;&micro;s takes 400&nbsp;&micro;s every time, which is the whole game for a rate controller.</li>
+    <li><strong>Every library already works.</strong> <code>PulsePosition</code>, <code>PWMServo</code>, the bit-banged OneShot125 output &mdash; all native. Nothing to replace.</li>
+    <li><strong>Real hardware watchdog.</strong> The i.MX RT1062 carries independent WDOG units that reset the chip regardless of what the CPU is doing. See <a href="#s08">&sect;08</a> &mdash; this is strictly stronger than a software task watchdog.</li>
+    <li><strong>Eight hardware serial ports.</strong> Receiver, telemetry, GPS and a debug console with no bit-banging and no contention.</li>
+  </ul>
+
+  <div class="note danger">
+    <h4>Teensy 4.x is NOT 5&nbsp;V tolerant</h4>
+    <p>This is the one that destroys boards, and it catches people precisely because the Teensy 3.x line <em>was</em> tolerant on its digital pins. Every I/O pin on a 4.1 is 3.3&nbsp;V maximum, and there is no protection diode to save you. Before any signal wire touches a pin, meter it. An ELRS receiver's SBUS output is 3.3&nbsp;V and fine; a 5&nbsp;V servo tester, a BEC-powered peripheral, or a logic-level shifter wired backwards is not.</p>
+  </div>
+
+  <div class="note hot">
+    <h4>Other 4.1 pins that will bite you</h4>
+    <p>Pin&nbsp;<code>13</code> is both SPI <code>SCK</code> and the onboard LED &mdash; harmless, but the LED will flicker on every SPI transfer and it is confusing during bring-up if you forget. Analog inputs are 3.3&nbsp;V full-scale, so size the battery divider against 3.3&nbsp;V, not 5&nbsp;V. The bottom-side pads (SD card, PSRAM, Ethernet) are easy to forget exist &mdash; check them before declaring a pin free.</p>
+  </div>
+
+  <p>The ESP32-S3 stays a good board, just not for this job &mdash; it loses on the one axis that matters, which is that it requires porting work the Teensy does not. The ESP32-P4 is ruled out: Arduino support for it is still explicitly immature, with ESP-IDF being the recommended path, and a flight-critical loop is the wrong place to sit on a maturing toolchain. Keep both for the RF work.</p>
+
+  <h3>The IMU: start cheap, plan for good</h3>
+  <p>Two-stage recommendation, and the reason matters more than the parts.</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Stage</th><th>Part</th><th>Bus</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="pill q">Bring-up</span></td>
+          <td class="mono nw">MPU6050<br>(GY-521)</td>
+          <td class="mono">I&sup2;C 400k</td>
+          <td>dRehmFlight supports it out of the box, so zero driver work stands between you and a first flight. Old, noisy, and heavily cloned &mdash; but you are debugging airframe and control loop here, not chasing sensor noise floor.</td>
+        </tr>
+        <tr>
+          <td><span class="pill p">Real board</span></td>
+          <td class="mono nw">ICM-42688-P</td>
+          <td class="mono">SPI 24M</td>
+          <td>Roughly an order of magnitude better noise density, high output data rate, and SPI keeps the sample read out of a shared bus. Costs you a driver. Worth it once the aircraft flies and the noise floor is what limits you.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Do not skip stage one to go straight to the better sensor. A new driver and a new airframe are two unknowns, and the first time the quad twitches you will not know which one to suspect.</p>
+
+  <h3>Everything else</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Item</th><th>Choice</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Airframe</td><td>250&nbsp;mm carbon quad</td><td>Already on hand, with motors and ESCs. This is the test mule, not the destination.</td></tr>
+        <tr><td>FC supply</td><td>Dedicated 5&nbsp;V / 2&nbsp;A buck</td><td>Its <em>own</em> feed from the pack, not an ESC BEC. Add bulk electrolytic plus a ceramic at the FC end of the wire.</td></tr>
+        <tr><td>Receiver</td><td>ExpressLRS, external module</td><td>Bought rather than built, deliberately &mdash; the RC link is the one safety-critical subsystem where proven beats homebrew. See <a href="#s07">&sect;07</a>.</td></tr>
+        <tr><td>Battery sense</td><td>Resistor divider &rarr; analog pin</td><td>Size for &lt;3.3&nbsp;V at full charge, and leave margin. Calibrate the reading against a meter rather than trusting the arithmetic.</td></tr>
+        <tr><td>Buzzer</td><td>Active piezo + FET</td><td>Not decoration. It is how you tell armed from disarmed from across the field.</td></tr>
+        <tr><td>Perfboard</td><td>FR-4, plated through-hole</td><td>Not the phenolic stuff. Pads lift on phenolic and vibration finishes the job.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ 02 ============ -->
+<section id="s02">
+  <div class="shead"><b>02</b><h2>The port you deleted</h2></div>
+
+  <p>An earlier revision of this manual planned an ESP32-S3 and a port of dRehmFlight onto it. That plan is abandoned, and the section that used to live here was a catalogue of everything the port would cost. It is worth keeping the catalogue, because it is now a list of work that <em>does not exist</em> &mdash; and because it shows what "run it on the board it was written for" actually buys.</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Would have had to solve</th><th>On Teensy 4.1</th><th>Why it vanishes</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="mono nw">PulsePosition.h<br><span style="font-family:'IBM Plex Sans'">PPM / PWM radio in</span></td>
+          <td><span class="pill p">Native</span></td>
+          <td>Teensy-only library, on a Teensy. Compiles and runs as shipped.</td>
+        </tr>
+        <tr>
+          <td class="mono nw">PWMServo<br><span style="font-family:'IBM Plex Sans'">VTOL servo out</span></td>
+          <td><span class="pill p">Native</span></td>
+          <td>Same. This one mattered for the VTOL phase specifically, so the saving compounds later.</td>
+        </tr>
+        <tr>
+          <td class="mono nw">OneShot125 timing<br><span style="font-family:'IBM Plex Sans'">bit-banged in loop</span></td>
+          <td><span class="pill p">Deterministic</span></td>
+          <td>No RTOS, no preemption, no WiFi interrupt. A pulse timed with <code>micros()</code> is exactly that long. This was the single largest risk in the old plan.</td>
+        </tr>
+        <tr>
+          <td class="mono nw">Core pinning</td>
+          <td><span class="pill p">N/A</span></td>
+          <td>One core, bare metal. Nothing to pin, nothing to verify, nothing to get wrong.</td>
+        </tr>
+        <tr>
+          <td class="mono nw">WiFi / BT disable</td>
+          <td><span class="pill p">N/A</span></td>
+          <td>No radios on the part. The jitter source is absent rather than suppressed.</td>
+        </tr>
+        <tr>
+          <td class="mono nw">Flash-write stalls</td>
+          <td><span class="pill p">N/A</span></td>
+          <td>No NVS-emulated EEPROM stalling the CPU for milliseconds mid-flight.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note pass">
+    <h4>What this reversal is actually worth</h4>
+    <p>Six categories of work, every one of them in the flight-critical path, and every one of them the kind that fails intermittently rather than obviously. Trading them away for a board already sitting on the bench is not a compromise or a downgrade &mdash; it is the largest single risk reduction available to this project, and it cost nothing.</p>
+  </div>
+
+  <h3>What is left to do</h3>
+  <p>Very little, which is the point. Run dRehmFlight close to stock for first flight: set the IMU type, set the receiver protocol, set the mixer for a quad, and calibrate. Resist the urge to restructure it before it has flown &mdash; every line you change is a line that was flight-proven and now isn't. The VTOL mixer work comes later, on a codebase you have already seen fly.</p>
+</section>
+
+<!-- ============ 03 ============ -->
+<section id="s03">
+  <div class="shead"><b>03</b><h2>Perfboard layout</h2></div>
+
+  <p>The board is a plan drawing, not an accident of where the parts happened to fit. Three zones, in a fixed order, with the noisiest thing furthest from the most sensitive thing.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 760 470" role="img" aria-label="Top-down plan view of the perfboard showing a power zone at the left, a logic zone in the middle, an isolated soft-mounted IMU island at the top right, connector headers on the right edge, and a keep-out band separating power from logic.">
+        <defs>
+          <marker id="dimA" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ink-3)"/>
+          </marker>
+        </defs>
+
+        <!-- board outline -->
+        <rect x="40" y="46" width="640" height="360" rx="4" fill="var(--panel)" stroke="currentColor" stroke-width="2"/>
+        <text x="40" y="34" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink-3)">FR-4 perfboard, plated through-hole &mdash; approx. 80 &times; 45 mm</text>
+
+        <!-- mounting holes -->
+        <circle cx="58" cy="64" r="5" fill="none" stroke="var(--ink-3)" stroke-width="1.2"/>
+        <circle cx="662" cy="64" r="5" fill="none" stroke="var(--ink-3)" stroke-width="1.2"/>
+        <circle cx="58" cy="388" r="5" fill="none" stroke="var(--ink-3)" stroke-width="1.2"/>
+        <circle cx="662" cy="388" r="5" fill="none" stroke="var(--ink-3)" stroke-width="1.2"/>
+
+        <!-- POWER ZONE -->
+        <rect x="58" y="86" width="164" height="284" rx="3" fill="var(--hot-soft)" stroke="var(--hot)" stroke-width="1.5"/>
+        <text x="66" y="104" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="1.2" fill="var(--hot)">POWER ZONE</text>
+        <rect x="72" y="116" width="66" height="34" rx="2" fill="var(--panel)" stroke="var(--hot)" stroke-width="1.2"/>
+        <text x="105" y="137" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">XT60</text>
+        <rect x="72" y="162" width="136" height="52" rx="2" fill="var(--panel)" stroke="var(--hot)" stroke-width="1.2"/>
+        <text x="140" y="184" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="14" font-weight="600" fill="currentColor">5 V buck</text>
+        <text x="140" y="201" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">switching node here</text>
+        <circle cx="96" cy="248" r="17" fill="var(--panel)" stroke="var(--hot)" stroke-width="1.2"/>
+        <text x="96" y="252" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="currentColor">470&micro;</text>
+        <circle cx="146" cy="248" r="17" fill="var(--panel)" stroke="var(--hot)" stroke-width="1.2"/>
+        <text x="146" y="252" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="currentColor">470&micro;</text>
+        <rect x="72" y="286" width="136" height="30" rx="2" fill="var(--panel)" stroke="var(--hot)" stroke-width="1.2"/>
+        <text x="140" y="306" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">VBAT divider</text>
+        <circle cx="140" cy="344" r="7" fill="currentColor"/>
+        <text x="156" y="341" font-family="IBM Plex Mono, monospace" font-size="9.5" font-weight="600" fill="currentColor">STAR</text>
+        <text x="156" y="353" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor">GND</text>
+
+        <!-- keep-out -->
+        <rect x="230" y="86" width="34" height="284" fill="none" stroke="var(--ink-3)" stroke-width="1" stroke-dasharray="4 4"/>
+        <text x="247" y="232" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)" transform="rotate(-90 247 232)">KEEP-OUT &mdash; NO COMPONENTS</text>
+
+        <!-- LOGIC ZONE -->
+        <rect x="272" y="150" width="222" height="220" rx="3" fill="var(--quiet-soft)" stroke="var(--quiet)" stroke-width="1.5"/>
+        <text x="280" y="168" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="1.2" fill="var(--quiet)">LOGIC ZONE</text>
+        <rect x="292" y="182" width="182" height="150" rx="2" fill="var(--panel)" stroke="var(--quiet)" stroke-width="1.5"/>
+        <text x="383" y="248" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="17" font-weight="700" fill="currentColor">Teensy 4.1</text>
+        <text x="383" y="266" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-3)">on female headers</text>
+        <text x="383" y="282" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-3)">USB faces this edge &darr;</text>
+        <g fill="var(--ink-3)">
+          <circle cx="300" cy="196" r="2"/><circle cx="300" cy="210" r="2"/><circle cx="300" cy="224" r="2"/><circle cx="300" cy="238" r="2"/><circle cx="300" cy="252" r="2"/><circle cx="300" cy="266" r="2"/><circle cx="300" cy="280" r="2"/><circle cx="300" cy="294" r="2"/><circle cx="300" cy="308" r="2"/><circle cx="300" cy="322" r="2"/>
+          <circle cx="466" cy="196" r="2"/><circle cx="466" cy="210" r="2"/><circle cx="466" cy="224" r="2"/><circle cx="466" cy="238" r="2"/><circle cx="466" cy="252" r="2"/><circle cx="466" cy="266" r="2"/><circle cx="466" cy="280" r="2"/><circle cx="466" cy="294" r="2"/><circle cx="466" cy="308" r="2"/><circle cx="466" cy="322" r="2"/>
+        </g>
+
+        <!-- IMU ISLAND -->
+        <rect x="512" y="86" width="146" height="112" rx="3" fill="var(--panel)" stroke="var(--quiet)" stroke-width="2" stroke-dasharray="7 3"/>
+        <text x="520" y="104" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="1.2" fill="var(--quiet)">IMU ISLAND</text>
+        <rect x="546" y="116" width="78" height="44" rx="2" fill="var(--quiet-soft)" stroke="var(--quiet)" stroke-width="1.2"/>
+        <text x="585" y="142" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="14" font-weight="600" fill="currentColor">IMU</text>
+        <text x="585" y="178" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">foam + flying leads</text>
+        <text x="585" y="190" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">not soldered flat</text>
+        <path d="M546 138 C 520 138 512 250 496 250" fill="none" stroke="var(--quiet)" stroke-width="1.2"/>
+        <path d="M552 160 C 530 180 510 258 496 258" fill="none" stroke="var(--quiet)" stroke-width="1.2"/>
+
+        <!-- headers right edge -->
+        <rect x="512" y="222" width="146" height="148" rx="3" fill="none" stroke="var(--rule)" stroke-width="1.2"/>
+        <text x="520" y="240" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="1.2" fill="var(--ink-3)">CONNECTORS</text>
+        <rect x="524" y="252" width="122" height="24" rx="2" fill="var(--panel)" stroke="var(--quiet)" stroke-width="1.2"/>
+        <text x="585" y="268" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">M1 M2 M3 M4</text>
+        <rect x="524" y="284" width="122" height="24" rx="2" fill="var(--panel)" stroke="var(--quiet)" stroke-width="1.2"/>
+        <text x="585" y="300" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">RX serial</text>
+        <rect x="524" y="316" width="122" height="24" rx="2" fill="var(--panel)" stroke="var(--quiet)" stroke-width="1.2"/>
+        <text x="585" y="332" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">buzzer + LED</text>
+
+        <!-- dimension -->
+        <line x1="208" y1="428" x2="546" y2="428" stroke="var(--ink-3)" stroke-width="1" marker-start="url(#dimA)" marker-end="url(#dimA)"/>
+        <text x="377" y="446" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">&ge; 40 mm, buck switching node to IMU</text>
+      </svg>
+    </div>
+    <figcaption><b>Distance is the cheapest noise mitigation you will ever buy.</b> The buck's switching node and the IMU sit at opposite corners with a component-free band between them. The IMU is not a footprint on the board &mdash; it is an island on foam with flying leads, so the board can vibrate without the sensor doing the same. Everything a hand touches during bring-up (USB, connectors) faces outward.</figcaption>
+  </figure>
+
+  <h3>Rules that survive the move to PCB</h3>
+  <ul>
+    <li><strong>Power in at one end, signal out at the other.</strong> Never route a motor signal wire back across the power zone to reach a header.</li>
+    <li><strong>The keep-out band is real.</strong> Nothing lives in it &mdash; no resistors, no jumpers, no "just this one wire". Its whole job is to be empty.</li>
+    <li><strong>Twist the pairs.</strong> Battery + and &minus; twisted together, each motor signal twisted with its own ground return. A twisted pair encloses almost no loop area, and loop area is what couples.</li>
+    <li><strong>Ceramic at the point of load.</strong> A 100&nbsp;nF within a few millimetres of the Teensy's 3.3&nbsp;V pin, in addition to whatever bulk sits at the buck. Bulk caps handle sag; ceramics handle edges, and they only work if they are close.</li>
+    <li><strong>Strain-relieve everything.</strong> A solder joint carrying vibration is a fatigue crack with a countdown. Anchor wires mechanically before they reach the pad.</li>
+  </ul>
+
+  <h3>Working pin map</h3>
+  <p>Teensy 4.1 pin numbers. Reconcile these against dRehmFlight's own <code>m1Pin</code>&hellip;<code>m4Pin</code> and receiver defines before wiring &mdash; it is far cheaper to move a <code>#define</code> than a solder joint.</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Function</th><th class="nw">Pin</th><th>Peripheral</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Motor 1&ndash;4 out</td><td class="mono nw">2, 3, 4, 5</td><td class="mono">PWM</td><td>OneShot125, bit-banged natively. Keep the physical order matching the mixer order and label the headers.</td></tr>
+        <tr><td>IMU SDA / SCL</td><td class="mono nw">18, 19</td><td class="mono">Wire</td><td>The default I&sup2;C bus, which is what dRehmFlight expects. 2.2&nbsp;k pull-ups, 400&nbsp;kHz.</td></tr>
+        <tr><td>IMU SPI</td><td class="mono nw">10, 11, 12, 13</td><td class="mono">SPI</td><td>CS / MOSI / MISO / SCK &mdash; the ICM-42688-P path, later. Pin&nbsp;13 also drives the onboard LED.</td></tr>
+        <tr><td>IMU data-ready</td><td class="mono nw">21</td><td class="mono">IRQ</td><td>Optional but preferred &mdash; sample on the sensor's clock, not yours.</td></tr>
+        <tr><td>SBUS in</td><td class="mono nw">7</td><td class="mono">Serial2 RX</td><td>Inverted serial at 100&nbsp;kbaud. The LPUART inverts in hardware &mdash; no external transistor.</td></tr>
+        <tr><td>Telemetry / CRSF out</td><td class="mono nw">8</td><td class="mono">Serial2 TX</td><td>Idle on the SBUS path. Reserve it now so the CRSF upgrade in <a href="#s07">&sect;07</a> costs no rewiring.</td></tr>
+        <tr><td>VBAT sense</td><td class="mono nw">22 / A8</td><td class="mono">ADC</td><td>Divider sized to keep a full pack under 3.3&nbsp;V, with margin.</td></tr>
+        <tr><td>Current sense</td><td class="mono nw">23 / A9</td><td class="mono">ADC</td><td>Optional. Some dRehmFlight builds default their PPM input to this pin &mdash; free here because we are on SBUS, but check.</td></tr>
+        <tr><td>Buzzer</td><td class="mono nw">6</td><td class="mono">PWM</td><td>Through a small N-channel FET, not straight off the pin.</td></tr>
+        <tr><td>Arm-state LED</td><td class="mono nw">9</td><td class="mono">GPIO</td><td>One LED whose only job is armed / disarmed. Nothing else drives it.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ 04 ============ -->
+<section id="s04">
+  <div class="shead"><b>04</b><h2>Grounding: the one that actually decides whether it flies</h2></div>
+
+  <p>If a single section of this manual is worth re-reading before you solder, it is this one. Ground problems do not announce themselves. They present as a gyro that drifts under throttle, an aircraft that oscillates only in fast forward flight, or an autolevel that pulls to one side as the pack sags &mdash; all of which look like tuning problems and none of which are.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 840 340" role="img" aria-label="Comparison of two grounding topologies. On the left a daisy-chained ground makes motor return current flow through the shared wire, developing a voltage offset at the IMU. On the right a star ground gives each load its own return to the battery negative, so the IMU reference stays clean.">
+        <defs>
+          <marker id="gA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--hot)"/>
+          </marker>
+        </defs>
+
+        <!-- LEFT: daisy chain -->
+        <rect x="14" y="14" width="392" height="312" rx="3" fill="none" stroke="var(--danger)" stroke-width="1.5"/>
+        <text x="30" y="40" font-family="Saira Semi Condensed, sans-serif" font-size="17" font-weight="700" fill="var(--danger)">DAISY CHAIN</text>
+        <text x="30" y="58" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">shared return &mdash; noise rides into the IMU</text>
+
+        <rect x="30" y="86" width="72" height="46" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="66" y="114" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">PACK &minus;</text>
+
+        <rect x="140" y="86" width="66" height="46" rx="3" fill="var(--hot-soft)" stroke="var(--hot)" stroke-width="1.5"/>
+        <text x="173" y="114" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">ESC</text>
+        <rect x="238" y="86" width="66" height="46" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="271" y="114" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">buck</text>
+        <rect x="326" y="86" width="60" height="46" rx="3" fill="var(--quiet-soft)" stroke="var(--quiet)" stroke-width="1.5"/>
+        <text x="356" y="114" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">IMU</text>
+
+        <!-- series chain -->
+        <line x1="102" y1="109" x2="136" y2="109" stroke="var(--hot)" stroke-width="3.5"/>
+        <line x1="206" y1="109" x2="234" y2="109" stroke="var(--hot)" stroke-width="3.5"/>
+        <line x1="304" y1="109" x2="322" y2="109" stroke="var(--hot)" stroke-width="3.5"/>
+
+        <!-- return current arrow -->
+        <path d="M356 146 L356 176 L66 176 L66 140" fill="none" stroke="var(--hot)" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#gA)"/>
+        <text x="211" y="196" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--hot)">motor return current &mdash; 100 A pk, sharp edges</text>
+
+        <!-- offset -->
+        <line x1="30" y1="240" x2="386" y2="240" stroke="var(--rule)" stroke-width="1"/>
+        <text x="30" y="230" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-3)">ground potential along the chain</text>
+        <path d="M66 240 L120 240 L128 250 L136 232 L150 254 L162 234 L176 248 L190 236 L206 252 L220 238 L240 250 L262 236 L286 254 L310 238 L336 252 L356 242" fill="none" stroke="var(--danger)" stroke-width="2"/>
+        <line x1="356" y1="240" x2="356" y2="266" stroke="var(--danger)" stroke-width="1" stroke-dasharray="2 2"/>
+        <text x="352" y="284" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="10.5" font-weight="600" fill="var(--danger)">&Delta;V at the IMU &mdash; read as motion</text>
+        <text x="30" y="308" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-3)">every milliohm of shared wire &times; 100 A = millivolts of lie</text>
+
+        <!-- RIGHT: star -->
+        <rect x="434" y="14" width="392" height="312" rx="3" fill="none" stroke="var(--pass)" stroke-width="1.5"/>
+        <text x="450" y="40" font-family="Saira Semi Condensed, sans-serif" font-size="17" font-weight="700" fill="var(--pass)">STAR</text>
+        <text x="450" y="58" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">one tie point &mdash; no shared return</text>
+
+        <circle cx="500" cy="180" r="13" fill="currentColor"/>
+        <text x="500" y="214" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" font-weight="600" fill="currentColor">PACK &minus;</text>
+        <text x="500" y="228" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">single node</text>
+
+        <rect x="672" y="72" width="66" height="44" rx="3" fill="var(--hot-soft)" stroke="var(--hot)" stroke-width="1.5"/>
+        <text x="705" y="99" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">ESC</text>
+        <rect x="672" y="158" width="66" height="44" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="705" y="185" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">buck</text>
+        <rect x="672" y="244" width="66" height="44" rx="3" fill="var(--quiet-soft)" stroke="var(--quiet)" stroke-width="1.5"/>
+        <text x="705" y="271" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">FC + IMU</text>
+
+        <line x1="512" y1="172" x2="668" y2="98" stroke="var(--hot)" stroke-width="3.5"/>
+        <line x1="514" y1="180" x2="668" y2="180" stroke="currentColor" stroke-width="2"/>
+        <line x1="512" y1="188" x2="668" y2="264" stroke="var(--quiet)" stroke-width="2"/>
+
+        <text x="754" y="99" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--hot)">100 A</text>
+        <text x="754" y="184" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">300 mA</text>
+        <text x="754" y="268" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--quiet)">150 mA</text>
+
+        <path d="M672 266 L640 266" fill="none" stroke="var(--pass)" stroke-width="1.5"/>
+        <text x="634" y="270" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="10" font-weight="600" fill="var(--pass)">clean 0 V</text>
+      </svg>
+    </div>
+    <figcaption><b>The difference is one wire, and it decides the build.</b> On the left, the IMU's ground reference sits at the far end of a conductor carrying the motors' return current &mdash; so every switching edge appears as a voltage offset under the sensor. On the right, each load returns to the pack negative on its own conductor, and the only current in the IMU's ground wire is the IMU's own 150&nbsp;mA. Same components, same schematic, completely different aircraft.</figcaption>
+  </figure>
+
+  <div class="note pass">
+    <h4>Practical rule</h4>
+    <p>Pick one physical point &mdash; the pack negative pad on the perfboard &mdash; and mark it on the board with a Sharpie before you solder anything. Every ground wire in the build terminates <em>there</em>, not at whatever ground pad happens to be nearest. If you find yourself running a ground from one module to another because it is convenient, you have just built the left-hand picture.</p>
+  </div>
+</section>
+
+<!-- ============ 05 ============ -->
+<section id="s05">
+  <div class="shead"><b>05</b><h2>The IMU soft mount is a filter, so design it like one</h2></div>
+
+  <p>A soft mount is not padding. It is a mechanical second-order low-pass filter, and it has a corner frequency set by the sensor board's mass and the compliance of whatever you stick it down with. Getting it right means putting that corner well below the frequencies the airframe produces.</p>
+
+  <h3>Run the numbers for the 250</h3>
+  <p>Take a 5-inch two-blade prop on a motor spinning up to roughly 20,000&nbsp;RPM under a 4S pack:</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Quantity</th><th class="nw">Value</th><th>Where it comes from</th></tr></thead>
+      <tbody>
+        <tr><td>Motor shaft rate</td><td class="mono nw">~333 Hz</td><td>20,000 RPM &divide; 60</td></tr>
+        <tr><td>Blade-pass frequency</td><td class="mono nw">~667 Hz</td><td>Shaft rate &times; 2 blades &mdash; the dominant vibration line</td></tr>
+        <tr><td>Target mount corner</td><td class="mono nw">30&ndash;80 Hz</td><td>Roughly a decade below shaft rate, so the mount is well into its attenuating region across the whole throttle range</td></tr>
+        <tr><td>Airframe rate content</td><td class="mono nw">&lt; 30 Hz</td><td>Actual aircraft motion. The mount must pass this untouched, which is what sets the lower bound.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>That window &mdash; above real flight dynamics, a decade below blade pass &mdash; is the whole design target. Too stiff and vibration reaches the sensor; too soft and the mount has its own resonance inside the flight band, which is worse than no mount at all because it amplifies rather than attenuates.</p>
+
+  <h3>What that means in practice</h3>
+  <ul>
+    <li><strong>Use gyro foam or soft double-sided tape, not rigid VHB.</strong> VHB is an adhesive, not an isolator &mdash; it is stiff enough that the corner lands right in the vibration band.</li>
+    <li><strong>Mass helps.</strong> A bare breakout is very light, which pushes the corner up. Some builders deliberately add a small mass to the sensor board. If you do, keep it symmetric about the sensor.</li>
+    <li><strong>Flying leads, and leave them slack.</strong> Four taut wires are four springs in parallel with your foam, and they will dominate the mount stiffness. This is the most common way a good soft mount is accidentally defeated.</li>
+    <li><strong>Balance the props first.</strong> No mount fixes an out-of-balance prop, and prop imbalance is the largest single vibration source on most builds. Balance before you tune anything.</li>
+  </ul>
+
+  <div class="note">
+    <h4>The software half</h4>
+    <p>dRehmFlight carries first-order low-pass constants on the gyro and accelerometer channels. They are the right complement to a good mount, and no substitute for one: filtering costs phase lag, and phase lag in an inner rate loop is exactly what limits how hard you can tune. Fix vibration mechanically first, then filter what is left. A build that needs aggressive software filtering to fly is telling you the mount is wrong.</p>
+  </div>
+</section>
+
+<!-- ============ 06 ============ -->
+<section id="s06">
+  <div class="shead"><b>06</b><h2>Motor output: use the hardware, not the loop</h2></div>
+
+  <p>Moving to the Teensy changed this section more than any other. dRehmFlight emits <strong>OneShot125</strong>, bit-banged, and on a bare-metal M7 that is deterministic &mdash; so the output layer needs no work at all. The question is now simply whether the ESCs on the 250 accept it, and they almost certainly do.</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Protocol</th><th class="nw">Frame</th><th class="nw">Max rate</th><th>Verdict for this build</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="mono">Standard PWM</td><td class="mono nw">1000&ndash;2000 &micro;s</td><td class="mono nw">~490 Hz</td>
+          <td>Universally supported, and far too slow to keep up with a 2&nbsp;kHz loop. Fine to prove the wiring, not to fly well.</td>
+        </tr>
+        <tr>
+          <td class="mono">OneShot125</td><td class="mono nw">125&ndash;250 &micro;s</td><td class="mono nw">~4 kHz</td>
+          <td><span class="pill p">Use this</span> What dRehmFlight ships, and the jitter objection that applied on an RTOS does not apply here. Zero new code.</td>
+        </tr>
+        <tr>
+          <td class="mono">DShot600</td><td class="mono nw">16-bit digital</td><td class="mono nw">~37 kHz</td>
+          <td><span class="pill c">Phase 2</span> Digital and checksummed, and what AM32 does best &mdash; so the custom ESCs in <a href="#s10">&sect;10</a> will want it. dRehmFlight does not emit it; adding DShot on a Teensy 4.1 is a bounded job using FlexIO or DMA, but it is not first-flight work.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note pass">
+    <h4>The ESC protocol question mostly dissolved</h4>
+    <p>Practically every BLHeli_S and AM32 ESC auto-detects its input protocol on the first few frames after power-up, and OneShot125 has been in that set since the beginning. So unless the 250 is wearing something genuinely unusual, dRehmFlight's stock output will drive the ESCs already fitted with no configuration on either side.</p>
+    <p>Still confirm it rather than assume &mdash; but downgrade it in your head from "blocking decision" to "thing to verify on the bench at step&nbsp;6." If the arming tone plays and the motor spins smoothly from idle, the ESC understood you.</p>
+  </div>
+
+  <p>So the output layer is finished before it is started. Keep dRehmFlight's mixer, its scaling, and its pin toggling exactly as written, and spend the attention you saved on <a href="#s04">grounding</a> and the <a href="#s08">safety systems</a> instead &mdash; which is where it was always better spent.</p>
+
+  <div class="placard">
+    <b>PROPS OFF</b>
+    <p>Every first run of anything in this section happens with props physically removed from the aircraft, not just throttle down. A mixer sign error at the bench costs you a startled afternoon; the same error with props on costs you a hand.</p>
+  </div>
+</section>
+
+<!-- ============ 07 ============ -->
+<section id="s07">
+  <div class="shead"><b>07</b><h2>Radio link</h2></div>
+
+  <p>The RC link is bought, not built &mdash; an external <strong>ExpressLRS</strong> module into the transmitter, and an ELRS receiver on the aircraft. That is the same reasoning as the AM32 decision in <a href="#s10">&sect;10</a>, applied to RF instead of power electronics: the link between your thumbs and the motors is the last place to introduce something unproven, and ELRS is years of solved problems &mdash; adaptive packet rates, frequency hopping, binding, and a failsafe detector that reliably distinguishes <em>degraded</em> from <em>gone</em>.</p>
+
+  <p>ELRS receivers speak <strong>CRSF</strong> natively; SBUS is a legacy output mode they can be configured into. dRehmFlight's documented receiver support is PWM, PPM, SBUS and Spektrum DSM &mdash; CRSF is not among them. That is the fork, and it is worth taking deliberately rather than by default.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Path A &mdash; ELRS in SBUS mode <span class="pill p">first flight</span></h4>
+      <p>Configure the receiver to output SBUS. It drops straight into dRehmFlight's existing SBUS path with zero new code. You give up CRSF's return telemetry &mdash; link quality, RSSI, battery voltage back to the transmitter &mdash; which is worth having but is not worth having <em>before</em> the aircraft has flown.</p>
+    </div>
+    <div class="card">
+      <h4>Path B &mdash; real CRSF <span class="pill c">phase 2</span></h4>
+      <p>Integrate <code>CRSFforArduino</code>, which explicitly supports Teensy 4.x, so the board choice adds no risk here. You get full bidirectional telemetry, at the cost of integrating a library dRehmFlight was not written against. Do this once you are flying and want richer link data.</p>
+    </div>
+    <div class="card">
+      <h4>Path C &mdash; homebrew LoRa <span class="pill d">dropped</span></h4>
+      <p>ELRS <em>is</em> LoRa &mdash; it runs on Semtech SX127x/SX1280 silicon; that is the "LRS" in the name. Rolling your own link on a raw LoRa module means re-solving latency tuning, hopping and failsafe detection yourself, and reintroduces exactly the unverified-link risk the ELRS module was bought to remove. The spare S3 LoRa module has a good job waiting in telemetry or a failsafe position beacon &mdash; on its own channel, independent of control.</p>
+    </div>
+  </div>
+
+  <div class="note hot">
+    <h4>Check the inversion before you blame the code</h4>
+    <p>SBUS is inverted serial by convention, but ELRS receivers can be configured to emit it either inverted or not, and the two look identical on a scope until you look at the idle level. The Teensy's LPUART can invert in hardware, so there is no transistor to add &mdash; but the setting on the receiver and the setting in the firmware have to agree. A receiver that produces perfectly valid frames the wrong way up presents as "no channels at all", which sends people hunting through their parser for hours. Meter the idle line first.</p>
+  </div>
+
+  <h3>The part that is actually safety-critical</h3>
+  <p>Whatever you choose, the receiver's job is not only to deliver channel values &mdash; it is to tell you, unambiguously and fast, when it has <em>stopped</em> delivering them. Timestamp every valid frame. If the newest good frame is older than 500&nbsp;ms, that is not a stale reading to reuse; it is a failsafe condition, and it belongs in <a href="#s08">&sect;08</a>.</p>
+
+  <div class="note danger">
+    <h4>Hold-last-command is the bug</h4>
+    <p>The failure mode that kills aircraft is a receiver that keeps outputting its last-known channel values after the link drops. If your parser fills a struct and the control loop reads that struct without checking its age, you have built exactly that behaviour by accident. Make the age check part of reading the data, not a separate step someone can forget.</p>
+  </div>
+</section>
+
+<!-- ============ 08 ============ -->
+<section id="s08">
+  <div class="shead"><b>08</b><h2>Safety systems</h2></div>
+
+  <p>Five mechanisms, each guarding one named failure. None of them ships unverified, and the verification is a bench test you can actually perform &mdash; not a code review.</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Mechanism</th><th>Failure it guards</th><th>Bench test</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Signal-loss failsafe</b></td>
+          <td>RX link drops mid-flight</td>
+          <td>Power off the transmitter. Motors must cut. <strong>Never hold last command.</strong></td>
+        </tr>
+        <tr>
+          <td><b>Arm / disarm state machine</b></td>
+          <td>Spin-up on boot, on reconnect, or on a glitched throttle channel</td>
+          <td>Boot with throttle high &mdash; must refuse to arm. Disarm, re-power the RX &mdash; must stay disarmed.</td>
+        </tr>
+        <tr>
+          <td><b>Hardware watchdog</b></td>
+          <td>MCU hang</td>
+          <td>Force a hang behind a debug command. The chip must reset and the motors must cut &mdash; not freeze at last throttle.</td>
+        </tr>
+        <tr>
+          <td><b>IMU sanity checks</b></td>
+          <td>Spikes or stuck values poisoning the estimator</td>
+          <td>Unplug the IMU mid-run. Reject out-of-range and unchanging samples before fusion, not after.</td>
+        </tr>
+        <tr>
+          <td><b>Brownout / VBAT monitor</b></td>
+          <td>Sag under load resetting the MCU while ESCs stay armed</td>
+          <td>Clean cutoff at threshold. Verify behaviour <em>through</em> a reset, not only at it.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 380" role="img" aria-label="Arm and disarm state machine with four states: boot, safe, armed, and failsafe. Every path back to armed passes through safe, and the direct transition from failsafe to armed is explicitly absent.">
+        <defs>
+          <marker id="sA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+          <marker id="sD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--danger)"/>
+          </marker>
+          <marker id="sP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--pass)"/>
+          </marker>
+        </defs>
+
+        <!-- BOOT -->
+        <rect x="24" y="152" width="96" height="56" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="72" y="185" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="16" font-weight="600" fill="currentColor">BOOT</text>
+
+        <!-- SAFE -->
+        <rect x="222" y="140" width="150" height="80" rx="3" fill="var(--quiet-soft)" stroke="var(--quiet)" stroke-width="2"/>
+        <text x="297" y="172" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="19" font-weight="700" fill="currentColor">SAFE</text>
+        <text x="297" y="192" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-3)">outputs inhibited</text>
+        <text x="297" y="206" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-3)">at hardware level</text>
+
+        <!-- ARMED -->
+        <rect x="500" y="140" width="150" height="80" rx="3" fill="var(--hot-soft)" stroke="var(--hot)" stroke-width="2"/>
+        <text x="575" y="172" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="19" font-weight="700" fill="currentColor">ARMED</text>
+        <text x="575" y="192" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-3)">mixer drives motors</text>
+        <text x="575" y="206" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-3)">buzzer + LED on</text>
+
+        <!-- FAILSAFE -->
+        <rect x="500" y="292" width="150" height="66" rx="3" fill="none" stroke="var(--danger)" stroke-width="2"/>
+        <text x="575" y="320" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="17" font-weight="700" fill="var(--danger)">FAILSAFE</text>
+        <text x="575" y="340" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-3)">throttle cut, latched</text>
+
+        <!-- boot -> safe -->
+        <line x1="120" y1="180" x2="216" y2="180" stroke="currentColor" stroke-width="1.5" marker-end="url(#sA)"/>
+        <text x="168" y="170" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">always</text>
+
+        <!-- safe -> armed -->
+        <path d="M372 162 L494 162" fill="none" stroke="var(--pass)" stroke-width="2" marker-end="url(#sP)"/>
+        <text x="433" y="132" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--pass)">arm switch low&rarr;high</text>
+        <text x="433" y="119" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--pass)">AND throttle &lt; 5%</text>
+        <text x="433" y="106" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--pass)">AND IMU healthy</text>
+        <text x="433" y="93" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--pass)">AND VBAT ok</text>
+        <text x="433" y="80" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--pass)">AND link fresh</text>
+
+        <!-- armed -> safe -->
+        <path d="M494 198 L372 198" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#sA)"/>
+        <text x="433" y="216" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">arm switch high&rarr;low</text>
+
+        <!-- armed -> failsafe -->
+        <path d="M575 220 L575 286" fill="none" stroke="var(--danger)" stroke-width="2" marker-end="url(#sD)"/>
+        <text x="590" y="242" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--danger)">RX stale &gt; 500 ms</text>
+        <text x="590" y="256" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--danger)">| IMU fault</text>
+        <text x="590" y="270" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--danger)">| VBAT &lt; cutoff</text>
+        <text x="590" y="284" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--danger)">| WDT expiry</text>
+
+        <!-- failsafe -> safe -->
+        <path d="M500 325 L297 325 L297 226" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#sA)"/>
+        <text x="392" y="344" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">only after disarm + throttle low</text>
+
+        <!-- the forbidden edge -->
+        <path d="M660 300 C 726 288 726 214 664 196" fill="none" stroke="var(--danger)" stroke-width="1.6" stroke-dasharray="5 4"/>
+        <line x1="676" y1="222" x2="716" y2="272" stroke="var(--danger)" stroke-width="2.5"/>
+        <line x1="716" y1="222" x2="676" y2="272" stroke="var(--danger)" stroke-width="2.5"/>
+        <text x="736" y="240" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600" fill="var(--danger)">NEVER</text>
+        <text x="736" y="254" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-3)">no auto</text>
+        <text x="736" y="266" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-3)">re-arm</text>
+      </svg>
+    </div>
+    <figcaption><b>The important edge is the one that isn't there.</b> A link that recovers must not put the aircraft back under power on its own &mdash; recovery routes through <span class="mono">SAFE</span> and requires a deliberate disarm-then-arm from the pilot. Note also that arming is a conjunction of five conditions, not one switch: a switch alone will eventually arm an aircraft that a stale link or an unhealthy IMU should have kept on the ground.</figcaption>
+  </figure>
+
+  <div class="note pass">
+    <h4>On a Teensy this is a real watchdog, not a task watchdog</h4>
+    <p>Worth being precise, because the distinction is a safety property rather than a naming detail. A <em>task</em> watchdog is software: a timer task notices that another task stopped checking in. It cannot help you if the thing that wedged is the scheduler, an interrupt storm, or the CPU itself &mdash; the watchdog is wedged too.</p>
+    <p>The i.MX RT1062 on the 4.1 has independent hardware WDOG units with their own clock. Once started, only a periodic feed from running code stops them resetting the chip, no matter what state the CPU is in. That is strictly stronger, and it is a benefit of the board change that is easy to overlook: what would have been a software mitigation on the ESP32 is a hardware guarantee here. Set the timeout to a few multiples of the loop period, feed it once per loop, and never from an interrupt.</p>
+  </div>
+
+  <div class="note hot">
+    <h4>Your last line of defence is not on the FC</h4>
+    <p>If the Teensy hangs or browns out, the ESCs keep their own power &mdash; they do not stop because the FC stopped. What saves you is that the signal stream stops, and AM32 and BLHeli both cut a motor after their own signal-loss timeout. That timeout is genuinely the last thing standing between a hung MCU and a runaway motor, so <strong>test it deliberately</strong>: arm on the bench with props off, pull the signal wire, and time how long the motor keeps spinning. Write the number down. It is a real parameter of your aircraft.</p>
+  </div>
+</section>
+
+<!-- ============ 09 ============ -->
+<section id="s09">
+  <div class="shead"><b>09</b><h2>Bench bring-up, in order</h2></div>
+
+  <p>Each step is independently verifiable and none depends on the next one working. Do not skip ahead &mdash; the value of the order is that when something fails you know it was introduced by the step you just did.</p>
+
+  <ol class="check">
+    <li><i></i><div><b>Smoke test the power path, no MCU fitted</b><span>Bench supply with current limit set to 200&nbsp;mA, not a LiPo. Confirm 5.0&nbsp;V out of the buck and correct polarity at the socket before a Teensy ever sits in it.</span></div></li>
+    <li><i></i><div><b>Meter every signal line before it touches a pin</b><span>The 4.1 is not 5&nbsp;V tolerant and has no protection diode. This step takes ninety seconds and is the difference between a flying aircraft and a dead board.</span></div></li>
+    <li><i></i><div><b>Blink an LED</b><span>Trivial, and it proves toolchain, USB, board and power all at once. Teensyduino uploads through the Teensy Loader, so confirm the button-press flow works now rather than while debugging something else.</span></div></li>
+    <li><i></i><div><b>Read the IMU, print raw values</b><span>Level the board and confirm roughly 1&nbsp;g on Z and near zero on X and Y. Rotate it by hand and check every axis sign against the mixer convention now, on the bench, where a sign error costs nothing.</span></div></li>
+    <li><i></i><div><b>Confirm loop rate under load</b><span>Instrument the loop period and log the worst case, not the average. A 2&nbsp;kHz mean with occasional 8&nbsp;ms outliers is a failing result that an average will hide.</span></div></li>
+    <li><i></i><div><b>Bind the ELRS link and print channels</b><span>Verify every stick and switch through dRehmFlight's SBUS path. Then power the transmitter off and confirm the stale-frame detector fires within 500&nbsp;ms. If you see nothing at all, suspect SBUS inversion before you suspect the parser.</span></div></li>
+    <li><i></i><div><b>Drive one motor, props off, aircraft clamped</b><span>One motor. Confirm direction and that it stops when commanded. Then the other three, one at a time.</span></div></li>
+    <li><i></i><div><b>Walk the arm/disarm state machine</b><span>Every transition in the diagram above, including the ones that must be refused: throttle-high arming, arming on a stale link, and auto re-arm out of failsafe.</span></div></li>
+    <li><i></i><div><b>Test all five safety mechanisms</b><span>The bench tests from &sect;08, each one performed and each result written down. This is the gate before anything spins with props fitted.</span></div></li>
+    <li><i></i><div><b>Tethered hover, props on, outdoors</b><span>First time under power. Tether it, stand clear, and have the disarm switch under your thumb before the pack goes in.</span></div></li>
+  </ol>
+
+  <div class="placard">
+    <b>GATE</b>
+    <p>The safety-mechanism step is a hard gate, not a checklist item. If any of the five has not been demonstrated on the bench, the tethered hover does not happen &mdash; regardless of how well everything else went that afternoon.</p>
+  </div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section id="s10">
+  <div class="shead"><b>10</b><h2>The custom ESC &mdash; build the board, borrow the firmware</h2></div>
+
+  <p>One ESC per motor is the right architecture, and for a stated reason: a failure is contained to one motor's authority instead of taking out the whole power stage. That is real redundancy, and it is the kind that a 4-in-1 board cannot give you.</p>
+
+  <p>But there is a trap inside this part of the project, and it is worth naming before you start. <strong>The hard part of an ESC is not the board. It is the commutation firmware.</strong></p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 330" role="img" aria-label="ESC block diagram showing the DShot input and microcontroller, gate driver, three half bridges of MOSFETs, back-EMF sensing network and current shunt, with the sensorless commutation firmware inside the MCU marked as the part to reuse rather than write.">
+        <defs>
+          <marker id="eA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+          <marker id="eH" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--hot)"/>
+          </marker>
+        </defs>
+
+        <!-- hardware you design -->
+        <rect x="14" y="18" width="600" height="296" rx="3" fill="none" stroke="var(--quiet)" stroke-width="1.5" stroke-dasharray="7 4"/>
+        <text x="28" y="38" font-family="IBM Plex Mono, monospace" font-size="10.5" letter-spacing="1.2" fill="var(--quiet)">HARDWARE YOU DESIGN</text>
+
+        <!-- signal in -->
+        <text x="28" y="112" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--quiet)">DShot600</text>
+        <text x="28" y="125" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--quiet)">from FC</text>
+        <line x1="94" y1="116" x2="140" y2="116" stroke="var(--quiet)" stroke-width="2" marker-end="url(#eA)"/>
+
+        <!-- MCU -->
+        <rect x="144" y="72" width="150" height="130" rx="3" fill="var(--panel)" stroke="currentColor" stroke-width="2"/>
+        <text x="219" y="96" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="16" font-weight="700" fill="currentColor">MCU</text>
+        <text x="219" y="113" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">STM32F051 class</text>
+        <rect x="158" y="126" width="122" height="62" rx="2" fill="var(--quiet-soft)" stroke="var(--quiet)" stroke-width="1.5"/>
+        <text x="219" y="146" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" font-weight="600" fill="var(--quiet)">AM32</text>
+        <text x="219" y="161" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-2)">sensorless six-step</text>
+        <text x="219" y="175" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-2)">DO NOT WRITE THIS</text>
+
+        <!-- gate driver -->
+        <rect x="336" y="88" width="110" height="98" rx="3" fill="var(--panel)" stroke="var(--hot)" stroke-width="1.5"/>
+        <text x="391" y="126" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="15" font-weight="600" fill="currentColor">Gate driver</text>
+        <text x="391" y="145" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">3-phase, bootstrap</text>
+        <text x="391" y="160" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">high + low side</text>
+        <line x1="294" y1="122" x2="332" y2="122" stroke="currentColor" stroke-width="1.5" marker-end="url(#eA)"/>
+        <text x="298" y="114" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--ink-3)">6 PWM</text>
+
+        <!-- half bridges -->
+        <rect x="482" y="60" width="112" height="154" rx="3" fill="var(--hot-soft)" stroke="var(--hot)" stroke-width="2"/>
+        <text x="538" y="84" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="15" font-weight="700" fill="currentColor">6 &times; N-ch</text>
+        <text x="538" y="101" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">30 V, low Rds(on)</text>
+        <g stroke="var(--hot)" stroke-width="1.2" fill="none">
+          <rect x="496" y="114" width="26" height="34" rx="2"/><rect x="526" y="114" width="26" height="34" rx="2"/><rect x="556" y="114" width="26" height="34" rx="2"/>
+          <rect x="496" y="156" width="26" height="34" rx="2"/><rect x="526" y="156" width="26" height="34" rx="2"/><rect x="556" y="156" width="26" height="34" rx="2"/>
+        </g>
+        <line x1="446" y1="137" x2="478" y2="137" stroke="var(--hot)" stroke-width="2" marker-end="url(#eH)"/>
+
+        <!-- motor -->
+        <circle cx="700" cy="137" r="44" fill="none" stroke="var(--hot)" stroke-width="2"/>
+        <text x="700" y="133" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="15" font-weight="600" fill="currentColor">Motor</text>
+        <text x="700" y="150" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">stock</text>
+        <line x1="594" y1="137" x2="652" y2="137" stroke="var(--hot)" stroke-width="4" marker-end="url(#eH)"/>
+        <text x="600" y="128" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--hot)">3&oslash;</text>
+
+        <!-- back-EMF sense -->
+        <path d="M538 214 L538 254 L219 254 L219 206" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#eA)"/>
+        <text x="378" y="272" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">back-EMF divider &rarr; zero-cross detect</text>
+
+        <!-- shunt -->
+        <rect x="482" y="230" width="112" height="26" rx="2" fill="var(--panel)" stroke="var(--hot)" stroke-width="1.2"/>
+        <text x="538" y="248" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor">shunt</text>
+
+        <!-- pack -->
+        <rect x="482" y="278" width="112" height="26" rx="2" fill="none" stroke="var(--hot)" stroke-width="1.5"/>
+        <text x="538" y="296" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor">pack + / &minus;</text>
+
+        <!-- reuse label -->
+        <rect x="634" y="212" width="172" height="92" rx="3" fill="var(--quiet-soft)" stroke="var(--quiet)" stroke-width="1.5"/>
+        <text x="720" y="234" text-anchor="middle" font-family="Saira Semi Condensed, sans-serif" font-size="14" font-weight="700" fill="var(--quiet)">THE SPLIT</text>
+        <text x="720" y="253" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-2)">board: yours</text>
+        <text x="720" y="267" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-2)">commutation: AM32</text>
+        <text x="720" y="286" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">weeks saved, not</text>
+        <text x="720" y="298" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">capability lost</text>
+      </svg>
+    </div>
+    <figcaption><b>Everything outside the small teal box is worth building yourself.</b> Gate drive, FET selection, thermal design, back-EMF sensing, shunt placement and layout are real power-electronics engineering with real transferable skill in them. The block inside it &mdash; sensorless six-step commutation with zero-cross detection, timing advance, desync recovery and startup ramping &mdash; is a mature open-source firmware that already works on cheap ARM parts. Choosing an AM32-supported MCU means the board you design boots working firmware on day one.</figcaption>
+  </figure>
+
+  <div class="note">
+    <h4>This is the KISS answer, not the lazy one</h4>
+    <p>Writing your own commutation is a larger project than the flight controller &mdash; and unlike the FC, where custom firmware buys you VTOL mixer logic and failsafe behaviour you actually control, a hand-written ESC loop buys you nothing that AM32 does not already do better. Design the hardware, pick a supported MCU, flash the firmware. If you later want to write commutation as its own exercise, you will have a known-good board to test it against, which is a far better position than debugging new silicon and new firmware together.</p>
+  </div>
+
+  <h3>Design targets for a 250-class ESC</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Parameter</th><th class="nw">Target</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Pack voltage</td><td class="mono nw">4S, 16.8 V max</td><td>Choose FETs at 30&nbsp;V minimum for switching-node ringing headroom.</td></tr>
+        <tr><td>Continuous current</td><td class="mono nw">20&ndash;30 A</td><td>Per motor. Peak is well above this &mdash; size copper and thermals for the peak.</td></tr>
+        <tr><td>MCU</td><td class="mono nw">AM32-supported</td><td>Check the project's current target list before ordering. This constraint drives the whole schematic.</td></tr>
+        <tr><td>Gate driver</td><td class="mono nw">3-phase, bootstrap</td><td>An integrated 3-phase driver is far less painful than discrete gate drive on a first board.</td></tr>
+        <tr><td>Input</td><td class="mono nw">DShot600</td><td>Note the FC-side dependency: dRehmFlight emits OneShot125, not DShot. Adding DShot output on the Teensy 4.1 is a bounded FlexIO/DMA job, but it lands on the critical path the moment these boards exist &mdash; plan it with them, not after.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note hot">
+    <h4>Verify the part numbers before you order</h4>
+    <p>Specific FET and gate-driver part numbers move constantly with availability, and any list written today will be partly wrong in six months. Treat the categories above as the specification and confirm actual parts against current distributor stock and the AM32 project's supported-target list when you get to schematic capture.</p>
+  </div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section id="s11">
+  <div class="shead"><b>11</b><h2>Phase 2 &mdash; committing it to copper</h2></div>
+
+  <p>Once the perfboard flies and the ESCs work, the integrated board becomes worth doing &mdash; less wiring, less mass, fewer connectors to shake loose. The rules are the same ones from &sect;03 and &sect;04, expressed in layout terms.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Split the ground pour</h4>
+      <p>Separate analog/logic ground from power ground, joined at exactly one point. This is &sect;04's star, drawn in copper. A single unbroken pour under both domains is the daisy chain wearing a disguise.</p>
+    </div>
+    <div class="card">
+      <h4>Keep the domains physically apart</h4>
+      <p>FETs, phase traces and bulk caps at one end; MCU and IMU at the other. Distance costs nothing at layout time and cannot be added afterwards.</p>
+    </div>
+    <div class="card">
+      <h4>Isolate the IMU even here</h4>
+      <p>An integrated board does not repeal the mechanics of &sect;05. Soft-mount the FC section on standoffs, or give the IMU its own compliant mount &mdash; not flat against a power PCB.</p>
+    </div>
+    <div class="card">
+      <h4>Short, direct gate traces</h4>
+      <p>Gate drive snaked around the board reintroduces exactly the noise you spent phase 1 eliminating. Keep every gate loop tight and its return adjacent.</p>
+    </div>
+  </div>
+
+  <p>Mixed analog, digital and power layout is a genuinely different discipline from the RF board work &mdash; different failure modes, different parasitics &mdash; but the governing instinct is the one you already have: keep the noisy things and the sensitive things apart, and control where the return current goes.</p>
+</section>
+
+<!-- ============ 12 ============ -->
+<section id="s12">
+  <div class="shead"><b>&mdash;</b><h2>Settled, and not to be reopened</h2></div>
+
+  <p>Each of these was considered on its merits and dropped for a stated reason. Recorded here so they do not come back around as fresh ideas &mdash; reopen one only with new information, not with new enthusiasm.</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Idea</th><th>Why it was dropped</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>ESP32-S3 + porting dRehmFlight</b></td>
+          <td>Loses to a Teensy 4.1 already on the bench on the only axis that matters: it requires flight-critical porting work the Teensy does not. See <a href="#s02">&sect;02</a> for the full list of what that would have cost.</td>
+        </tr>
+        <tr>
+          <td><b>ESP32-P4</b></td>
+          <td>Arduino support still explicitly immature, with ESP-IDF the recommended path. A flight-critical loop is the wrong place to sit on a maturing toolchain. Revisit for a non-flight project later.</td>
+        </tr>
+        <tr>
+          <td><b>Hand-wound motors</b></td>
+          <td>Rotor imbalance would manufacture the exact vibration that <a href="#s05">&sect;05</a> exists to reject, and buys nothing a commodity motor does not already give you.</td>
+        </tr>
+        <tr>
+          <td><b>Homebrew LoRa control link</b></td>
+          <td>ELRS already <em>is</em> LoRa, with the hard parts solved. Building your own reintroduces precisely the unverified-link risk that buying the ELRS module removed. The spare module's real job is telemetry or a failsafe beacon on its own channel.</td>
+        </tr>
+        <tr>
+          <td><b>Writing ESC commutation</b></td>
+          <td>Bigger than the flight controller, and AM32 already does it better. Build the board, borrow the firmware &mdash; <a href="#s10">&sect;10</a>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Still open</h3>
+  <p>Shorter than it was. The board reversal closed most of it.</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Question</th><th class="nw">Status</th><th>How to close it</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Which IMU is physically on hand?</b></td>
+          <td><span class="pill d">Blocking</span></td>
+          <td>The only genuine blocker left. An MPU6050 breakout in a drawer decides stage one and needs no driver work at all.</td>
+        </tr>
+        <tr>
+          <td><b>SBUS or CRSF on the ELRS link</b></td>
+          <td><span class="pill c">Default set</span></td>
+          <td>Path A (SBUS) for first flight, per <a href="#s07">&sect;07</a>. Only revisit once flying and telemetry is worth the integration.</td>
+        </tr>
+        <tr>
+          <td>What the 250's ESCs accept</td>
+          <td><span class="pill q">Verify, don't decide</span></td>
+          <td>Downgraded from blocking: OneShot125 auto-detect is near-universal. Confirm at bench step&nbsp;7 rather than up front.</td>
+        </tr>
+        <tr>
+          <td>DShot output on Teensy for the custom ESCs</td>
+          <td><span class="pill q">Phase 2</span></td>
+          <td>FlexIO or DMA. Scope it alongside the ESC boards, not before them.</td>
+        </tr>
+        <tr>
+          <td>ESC MOSFET / gate-driver selection</td>
+          <td><span class="pill q">Later</span></td>
+          <td>Against current stock and the AM32 supported-target list, at schematic capture.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <p><b>Perfboard Flight Controller</b> &mdash; build manual, revision B, 2026-08-28. Revision B moves the FC from an ESP32-S3 port to a native Teensy 4.1, and the RC link from Spektrum DSMX to ExpressLRS. Companion to <span class="mono">docs/HANDOFF.md</span>, <span class="mono">docs/SAFETY.md</span> and <span class="mono">docs/OPEN-QUESTIONS.md</span> in the project repo.</p>
+  <p>Component-level part numbers, the AM32 supported-target list, and dRehmFlight's own pin defines all drift over time &mdash; verify against current datasheets and project documentation before wiring, and treat the categories here as the specification rather than the bill of materials.</p>
+</footer>
+
+</main>
+</div>
+</div>
