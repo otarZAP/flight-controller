@@ -1,0 +1,1907 @@
+<title>Solder to Sky</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#EDF2F5; --card:#FFFFFF; --card-2:#E2EAF0; --sunk:#DCE5EB;
+  --ink:#14212B; --ink-2:#4A5D6B; --ink-3:#7B8D9A; --rule:#C5D2DB;
+  --blue:#14618F; --blue-soft:#D8E7F2;
+  --signal:#0D6C69; --signal-soft:#D4EAE9;
+  --power:#AF4917; --power-soft:#F8E3D8;
+  --tip:#8A6100; --tip-soft:#FAEDC8;
+  --danger:#9C2115; --danger-soft:#F9DDD9;
+  --pass:#286840; --pass-soft:#D8ECDF;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F161B; --card:#171F26; --card-2:#1E2831; --sunk:#121A20;
+    --ink:#E6EDF2; --ink-2:#A5B6C1; --ink-3:#76888F; --rule:#2A3740;
+    --blue:#5AB3E0; --blue-soft:#102C3E;
+    --signal:#48C4BF; --signal-soft:#0D2E2D;
+    --power:#E88B5D; --power-soft:#301D14;
+    --tip:#DCAE45; --tip-soft:#2E2510;
+    --danger:#E97360; --danger-soft:#331915;
+    --pass:#6FBB8B; --pass-soft:#14291D;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F161B; --card:#171F26; --card-2:#1E2831; --sunk:#121A20;
+  --ink:#E6EDF2; --ink-2:#A5B6C1; --ink-3:#76888F; --rule:#2A3740;
+  --blue:#5AB3E0; --blue-soft:#102C3E;
+  --signal:#48C4BF; --signal-soft:#0D2E2D;
+  --power:#E88B5D; --power-soft:#301D14;
+  --tip:#DCAE45; --tip-soft:#2E2510;
+  --danger:#E97360; --danger-soft:#331915;
+  --pass:#6FBB8B; --pass-soft:#14291D;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Source Sans 3",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1120px; margin:0 auto; padding:0 26px 90px}
+h1,h2,h3,h4,.big{font-family:"Bricolage Grotesque","Source Sans 3",sans-serif}
+
+/* masthead */
+.mast{padding:52px 0 30px; border-bottom:3px solid var(--ink); margin-bottom:14px}
+.kicker{
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--blue); margin:0 0 16px; font-weight:500;
+}
+.mast h1{
+  font-weight:800; font-size:clamp(48px,10vw,104px); line-height:.92; margin:0;
+  letter-spacing:-.02em; text-wrap:balance;
+}
+.mast h1 span{color:var(--blue)}
+.mast .sub{max-width:56ch; margin:22px 0 0; font-size:20px; color:var(--ink-2); line-height:1.5}
+.facts{display:flex; flex-wrap:wrap; gap:0; margin-top:30px; border-top:1px solid var(--rule)}
+.facts > div{flex:1 1 150px; padding:14px 18px 14px 0; border-right:1px solid var(--rule)}
+.facts > div:last-child{border-right:0}
+.facts dt{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin:0 0 4px}
+.facts dd{margin:0; font-family:"Bricolage Grotesque",sans-serif; font-weight:700; font-size:19px; line-height:1.2}
+
+/* layout */
+.shell{display:grid; grid-template-columns:172px minmax(0,1fr); gap:52px; align-items:start; margin-top:38px}
+@media (max-width:920px){ .shell{grid-template-columns:1fr; gap:0} .rail{display:none} }
+.rail{position:sticky; top:24px; font-size:13.5px}
+.rail strong{
+  display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-3); margin:0 0 10px; padding-bottom:9px;
+  border-bottom:1px solid var(--rule); font-weight:500;
+}
+.rail a{display:block; padding:4px 0; color:var(--ink-2); text-decoration:none; line-height:1.3}
+.rail a:hover{color:var(--blue)}
+.rail a:focus-visible{outline:2px solid var(--blue); outline-offset:3px}
+.rail .grp{margin-bottom:16px}
+
+/* parts + sections */
+.part{margin:0 0 20px; scroll-margin-top:22px}
+.parthead{border-top:3px solid var(--blue); padding-top:14px; margin:56px 0 26px}
+.parthead .pn{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--blue); font-weight:500;
+}
+.parthead h2{font-weight:800; font-size:clamp(30px,4.4vw,44px); line-height:1.04; margin:6px 0 0; letter-spacing:-.015em; text-wrap:balance}
+.parthead p{margin:12px 0 0; font-size:18px; color:var(--ink-2); max-width:62ch}
+
+h3{font-weight:700; font-size:24px; margin:34px 0 10px; letter-spacing:-.008em}
+h4{font-weight:700; font-size:18.5px; margin:24px 0 8px}
+p{max-width:66ch; margin:0 0 14px}
+ul,ol{max-width:66ch; margin:0 0 14px; padding-left:22px}
+li{margin-bottom:8px}
+li::marker{color:var(--blue)}
+a{color:var(--blue)}
+code{font-family:"IBM Plex Mono",monospace; font-size:.87em; background:var(--sunk); padding:1px 5px; border-radius:3px}
+.lead{font-size:19px; color:var(--ink-2)}
+
+/* step cards */
+.step{
+  background:var(--card); border:1px solid var(--rule); border-radius:6px;
+  margin:26px 0; overflow:hidden; scroll-margin-top:22px;
+}
+.step > header{
+  display:grid; grid-template-columns:auto 1fr; gap:18px; align-items:center;
+  padding:18px 22px; border-bottom:1px solid var(--rule); background:var(--card-2);
+}
+.step .n{
+  font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:40px;
+  line-height:.85; color:var(--blue); font-variant-numeric:tabular-nums;
+}
+.step h3{margin:0; font-size:22px; line-height:1.2}
+.step .meta{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3);
+  letter-spacing:.06em; margin-top:5px;
+}
+.step .body{padding:20px 22px 4px}
+.step .body > :last-child{margin-bottom:16px}
+.done{
+  display:flex; gap:13px; align-items:flex-start; margin:0; padding:14px 22px;
+  background:var(--pass-soft); border-top:1px solid var(--rule);
+}
+.done b{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--pass); white-space:nowrap; padding-top:3px;
+}
+.done p{margin:0; max-width:none; font-size:15.5px}
+
+/* callouts */
+.box{border-radius:5px; padding:15px 18px; margin:20px 0; max-width:70ch; border:1px solid var(--rule)}
+.box p{max-width:none} .box p:last-child{margin-bottom:0}
+.box b.lbl{
+  display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; margin-bottom:6px;
+}
+.nugget{background:var(--tip-soft); border-color:var(--tip)}
+.nugget b.lbl{color:var(--tip)}
+.trick{background:var(--blue-soft); border-color:var(--blue)}
+.trick b.lbl{color:var(--blue)}
+.deep{background:var(--signal-soft); border-color:var(--signal)}
+.deep b.lbl{color:var(--signal)}
+.warn{background:var(--danger-soft); border-color:var(--danger)}
+.warn b.lbl{color:var(--danger)}
+
+.placard{
+  border:3px solid var(--danger); background:var(--card); border-radius:5px;
+  padding:16px 20px; margin:26px 0; max-width:70ch;
+}
+.placard b.lbl{
+  display:block; font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:17px;
+  letter-spacing:.06em; color:var(--danger); margin-bottom:6px;
+}
+.placard p{margin:0; max-width:none; font-size:16px}
+
+/* Task / Conditions / Standards */
+.tcs{border:2px solid var(--ink); border-radius:7px; background:var(--card); margin:28px 0; overflow:hidden}
+.tcs > div{padding:18px 22px; border-bottom:1px solid var(--rule)}
+.tcs > div:last-child{border-bottom:0}
+.tcs h4{
+  font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:13px; letter-spacing:.16em;
+  text-transform:uppercase; margin:0 0 9px; color:var(--blue);
+}
+.tcs p{margin:0 0 9px; max-width:70ch; font-size:16px}
+.tcs p:last-child{margin-bottom:0}
+.tcs ul{margin:0; max-width:70ch; padding-left:20px}
+.tcs ul li{margin-bottom:5px; font-size:15.5px}
+.tcs .legal{background:var(--card-2)}
+.tcs .legal h4{color:var(--danger)}
+
+.tcsmini{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:0;
+  border:1px solid var(--rule); border-radius:6px; background:var(--card); margin:0 0 26px; overflow:hidden;
+}
+.tcsmini > div{padding:12px 16px; border-right:1px solid var(--rule)}
+.tcsmini > div:last-child{border-right:0}
+.tcsmini b{
+  display:block; font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.15em;
+  text-transform:uppercase; color:var(--ink-3); margin-bottom:4px; font-weight:500;
+}
+.tcsmini span{font-size:14.5px; line-height:1.45; display:block; color:var(--ink-2)}
+
+/* photo slots */
+.photo{
+  border:2px dashed var(--rule); border-radius:5px; background:var(--sunk);
+  padding:26px 20px; margin:20px 0; text-align:center; max-width:70ch;
+}
+.photo svg{width:34px; height:34px; color:var(--ink-3); display:block; margin:0 auto 10px}
+.photo b{
+  display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--ink-3); margin-bottom:6px;
+}
+.photo span{display:block; font-size:15px; color:var(--ink-2); max-width:46ch; margin:0 auto}
+.photo em{display:block; font-family:"IBM Plex Mono",monospace; font-style:normal; font-size:12px; color:var(--ink-3); margin-top:8px}
+
+/* tables */
+.tw{overflow-x:auto; margin:22px 0; border:1px solid var(--rule); border-radius:5px; background:var(--card)}
+table{border-collapse:collapse; width:100%; font-size:15px; min-width:520px}
+th,td{text-align:left; padding:10px 15px; border-bottom:1px solid var(--rule); vertical-align:top}
+thead th{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:500; background:var(--card-2); white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:0}
+.mono{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+.nw{white-space:nowrap}
+.tag{
+  display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.08em;
+  text-transform:uppercase; padding:2px 7px; border-radius:3px; border:1px solid currentColor; white-space:nowrap;
+}
+.tag.b{color:var(--blue)} .tag.o{color:var(--power)} .tag.g{color:var(--pass)}
+.tag.r{color:var(--danger)} .tag.a{color:var(--tip)}
+
+/* figures */
+figure{margin:26px 0}
+figure svg{display:block; width:100%; height:auto; color:var(--ink)}
+.figbox{border:1px solid var(--rule); border-radius:5px; background:var(--card); padding:20px 18px 14px; overflow-x:auto}
+figcaption{margin-top:12px; padding-top:11px; border-top:1px solid var(--rule); font-size:14px; color:var(--ink-2); line-height:1.5; max-width:76ch}
+figcaption b{color:var(--ink)}
+
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px; margin:22px 0}
+.mini{border:1px solid var(--rule); background:var(--card); border-radius:5px; padding:16px 18px}
+.mini h4{margin:0 0 6px; font-size:17px}
+.mini p{font-size:14.5px; margin:0; color:var(--ink-2); max-width:none}
+
+footer{border-top:3px solid var(--ink); margin-top:60px; padding-top:22px; color:var(--ink-3); font-size:14px}
+footer p{max-width:72ch}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="kicker">A build-along &middot; start to first flight</p>
+  <h1>Solder<br>to <span>Sky</span></h1>
+  <p class="sub">You are going to build the brain of a flying machine on a piece of perfboard, and then you are going to fly it. No prior drone knowledge needed &mdash; we start at "what even is a flight controller" and end at a hovering aircraft.</p>
+  <div class="facts">
+    <div><dt>Difficulty</dt><dd>Patient beginner</dd></div>
+    <div><dt>Build time</dt><dd>3&ndash;4 evenings</dd></div>
+    <div><dt>Rough cost</dt><dd>$140&ndash;220</dd></div>
+    <div><dt>Brain</dt><dd>Teensy 4.1</dd></div>
+    <div><dt>First win</dt><dd>Step 3</dd></div>
+  </div>
+</header>
+
+<div class="shell">
+
+<nav class="rail">
+  <div class="grp">
+    <strong>Start</strong>
+    <a href="#start">Hello &amp; what we're making</a>
+  </div>
+  <div class="grp">
+    <strong>Understand</strong>
+    <a href="#p0">What you're building</a>
+    <a href="#how">How a quad flies</a>
+    <a href="#loop">The 2,000&times;/sec loop</a>
+    <a href="#domains">Quiet side, loud side</a>
+  </div>
+  <div class="grp">
+    <strong>Gather</strong>
+    <a href="#p1">Parts list</a>
+    <a href="#chips">Which chip &amp; why</a>
+    <a href="#tools">Tools</a>
+    <a href="#solder">Soldering basics</a>
+  </div>
+  <div class="grp">
+    <strong>Wiring</strong>
+    <a href="#wiring">The whole map</a>
+    <a href="#pins">Pinout drawing</a>
+    <a href="#firmware">What to change in code</a>
+  </div>
+  <div class="grp">
+    <strong>Build</strong>
+    <a href="#s1">1 &middot; Safety setup</a>
+    <a href="#s2">2 &middot; Power path</a>
+    <a href="#s3">3 &middot; First blink</a>
+    <a href="#s4">4 &middot; Mount the brain</a>
+    <a href="#s5">5 &middot; Star ground</a>
+    <a href="#s6">6 &middot; IMU island</a>
+    <a href="#s7">7 &middot; Read the IMU</a>
+    <a href="#s8">8 &middot; Loop rate</a>
+    <a href="#s9">9 &middot; Radio link</a>
+    <a href="#s10">10 &middot; Motor test</a>
+    <a href="#s11">11 &middot; Arm &amp; disarm</a>
+    <a href="#s12">12 &middot; Safety gauntlet</a>
+    <a href="#s13">13 &middot; Tethered hover</a>
+    <a href="#s14">14 &middot; First flight</a>
+  </div>
+  <div class="grp">
+    <strong>Fly</strong>
+    <a href="#preflight">Pre-flight ritual</a>
+    <a href="#tuning">Tuning, properly</a>
+  </div>
+  <div class="grp">
+    <strong>Beyond</strong>
+    <a href="#esc">Build your own ESCs</a>
+    <a href="#p4">Make it a VTOL</a>
+  </div>
+  <div class="grp">
+    <strong>Reference</strong>
+    <a href="#trouble">Troubleshooting</a>
+    <a href="#glossary">Glossary</a>
+    <a href="#log">Build log</a>
+    <a href="#ask">Ask me things</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- ================= START HERE ================= -->
+<section class="part" id="start">
+  <div class="parthead">
+    <p class="pn">Start here</p>
+    <h2>Hello, and what we're doing</h2>
+  </div>
+
+  <p class="lead">Welcome. Over the next few evenings you're going to build a flight controller &mdash; the small computer that keeps an aircraft from falling over &mdash; on a bare piece of perfboard, from parts, with your own hands. Then you're going to fly it.</p>
+
+  <p>You don't need to know anything about drones to start. You need patience, a soldering iron, and a willingness to check things instead of hoping. Everything else is in here.</p>
+
+  <p>Before any of that, here's exactly what you're signing up for: <strong>what you'll make, what you'll be working with, and what "right" looks like.</strong> Read this once and the whole build has a shape.</p>
+
+  <div class="tcs">
+    <div>
+      <h4>What we're making</h4>
+      <p>Build, program, test and fly a custom flight controller for a 250&nbsp;mm quadcopter &mdash; and understand every part of it well enough to fix it, change it, and explain it to somebody else.</p>
+    </div>
+    <div>
+      <h4>What you'll be working with</h4>
+      <p><strong>Given:</strong> a workbench with a temperature-controlled soldering iron, a multimeter, and a current-limited bench supply; the parts listed in Part&nbsp;1; a Teensy&nbsp;4.1 microcontroller; the free dRehmFlight firmware; a computer running the Arduino IDE; a 250&nbsp;mm quadcopter frame with motors and ESCs already fitted; an ExpressLRS radio link; and an open grassy area away from people for flight testing.</p>
+      <p><strong>Working:</strong> alone, over roughly three to four evenings, indoors for the build and outdoors for the flying. If you're under 18, with an adult present for battery charging and for the first flight.</p>
+      <p><strong>Not given:</strong> prior drone knowledge, prior flight-controller experience, or an existing aircraft to copy.</p>
+    </div>
+    <div>
+      <h4>What "right" looks like</h4>
+      <ul>
+        <li>The aircraft <strong>hovers hands-off for ten seconds</strong> without wandering or oscillating.</li>
+        <li>All <strong>five safety mechanisms</strong> are demonstrated on the bench, with props off, before a propeller is ever fitted.</li>
+        <li><strong>Every step is finished properly before the next one starts.</strong> This is the rule that makes the whole thing work &mdash; when something breaks, you always know which step broke it.</li>
+        <li>Every soldered joint is shiny and cone-shaped, not dull and blobby.</li>
+        <li>Every ground wire runs to <strong>one single point</strong>, never module to module.</li>
+        <li>You can point at any wire on the finished aircraft and say what it does and why it's there.</li>
+      </ul>
+    </div>
+    <div class="legal">
+      <h4>Staying safe, legal and decent</h4>
+      <p>Rules differ by country, so check your own aviation authority before you fly &mdash; but these hold almost everywhere and none of them are optional:</p>
+      <ul>
+        <li><strong>Register the aircraft</strong> if it's over your country's weight threshold. A 250&nbsp;mm quad with a 4S pack is often right around it.</li>
+        <li><strong>Keep it in sight</strong>, below roughly 120&nbsp;m / 400&nbsp;ft, and well away from airports and helicopter routes.</li>
+        <li><strong>Never over people, crowds, or roads.</strong> Not "carefully over" &mdash; not over.</li>
+        <li><strong>Not over property that isn't yours</strong>, and no filming people who haven't agreed to it.</li>
+        <li><strong>Charge LiPo batteries in a fireproof bag</strong>, never unattended, never overnight. This is the one that burns houses down.</li>
+        <li><strong>Props off until step&nbsp;13.</strong> Everything in this guide is written so you never need to break this rule.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="box nugget">
+    <b class="lbl">Nugget</b>
+    <p>Writing those three things down before starting is the oldest trick in teaching anything practical, and it works because it removes the two things that quietly wreck learning: not knowing what "finished" actually means, and not knowing whether a problem is your mistake or your equipment. Pin those down first and you can teach yourself almost anything.</p>
+  </div>
+
+  <p>Every part of this guide repeats that pattern in miniature, and every single build step ends with a <strong>"you're done when"</strong> &mdash; something you can actually see or measure, not a vague "it should work now". Hit it and move on. Miss it and you stop and fix it right there, while it's still cheap.</p>
+</section>
+
+<!-- ================= PART 0 ================= -->
+<section class="part" id="p0">
+  <div class="parthead">
+    <p class="pn">Part 0</p>
+    <h2>What you're actually building</h2>
+    <p>Five minutes of reading that makes the other thirty steps make sense. Don't skip it &mdash; almost every mistake later comes from not having this picture in your head.</p>
+  </div>
+
+  <p class="lead">A <strong>flight controller</strong> is a small computer that sits in the middle of an aircraft and does one job, extremely fast: it notices the aircraft is tipping, and changes the motor speeds to un-tip it.</p>
+
+  <p>That's it. That's the whole idea. Everything else is detail.</p>
+
+  <p>A quadcopter is physically <em>unstable</em> &mdash; balanced on four columns of thrust, it wants to fall over the way a pencil balanced on your fingertip wants to fall over. You keep the pencil up by making tiny corrections constantly. The flight controller does exactly that, about two thousand times per second, forever.</p>
+
+  <div class="box nugget">
+    <b class="lbl">Nugget</b>
+    <p>Without a flight controller a quadcopter is unflyable by a human. Not "hard" &mdash; genuinely impossible. The corrections needed are faster than human reaction time by a factor of about a hundred. Every multirotor that has ever flown, flew because a computer was doing this.</p>
+  </div>
+
+  <h3 id="how">How a quadcopter steers</h3>
+  <p>Four motors, no moving control surfaces, no tail rotor. Everything the aircraft does, it does by making some props spin faster than others.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 860 300" role="img" aria-label="Three diagrams showing how a quadcopter rolls, pitches and yaws by varying the speed of its four motors, and how counter-rotating props cancel torque.">
+        <defs>
+          <marker id="tarr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--blue)"/>
+          </marker>
+        </defs>
+
+        <!-- ROLL -->
+        <text x="105" y="26" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="700" fill="currentColor">ROLL</text>
+        <text x="105" y="45" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">tip left / right</text>
+        <line x1="52" y1="105" x2="158" y2="205" stroke="currentColor" stroke-width="2"/>
+        <line x1="158" y1="105" x2="52" y2="205" stroke="currentColor" stroke-width="2"/>
+        <circle cx="52" cy="105" r="17" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <circle cx="52" cy="205" r="17" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <circle cx="158" cy="105" r="11" fill="var(--card)" stroke="var(--ink-3)" stroke-width="1.5"/>
+        <circle cx="158" cy="205" r="11" fill="var(--card)" stroke="var(--ink-3)" stroke-width="1.5"/>
+        <text x="52" y="80" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" font-weight="500" fill="var(--power)">FASTER</text>
+        <text x="105" y="248" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13.5" fill="var(--ink-2)">Left pair harder &rarr;</text>
+        <text x="105" y="266" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13.5" fill="var(--ink-2)">aircraft leans right</text>
+
+        <!-- PITCH -->
+        <text x="430" y="26" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="700" fill="currentColor">PITCH</text>
+        <text x="430" y="45" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">nose up / down</text>
+        <line x1="377" y1="105" x2="483" y2="205" stroke="currentColor" stroke-width="2"/>
+        <line x1="483" y1="105" x2="377" y2="205" stroke="currentColor" stroke-width="2"/>
+        <circle cx="377" cy="205" r="17" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <circle cx="483" cy="205" r="17" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <circle cx="377" cy="105" r="11" fill="var(--card)" stroke="var(--ink-3)" stroke-width="1.5"/>
+        <circle cx="483" cy="105" r="11" fill="var(--card)" stroke="var(--ink-3)" stroke-width="1.5"/>
+        <text x="430" y="240" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" font-weight="500" fill="var(--power)">REAR PAIR FASTER</text>
+        <text x="430" y="266" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13.5" fill="var(--ink-2)">nose drops, aircraft flies forward</text>
+
+        <!-- YAW -->
+        <text x="742" y="26" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="700" fill="currentColor">YAW</text>
+        <text x="742" y="45" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">spin in place</text>
+        <line x1="689" y1="105" x2="795" y2="205" stroke="currentColor" stroke-width="2"/>
+        <line x1="795" y1="105" x2="689" y2="205" stroke="currentColor" stroke-width="2"/>
+        <circle cx="689" cy="105" r="17" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <circle cx="795" cy="205" r="17" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <circle cx="795" cy="105" r="11" fill="var(--card)" stroke="var(--ink-3)" stroke-width="1.5"/>
+        <circle cx="689" cy="205" r="11" fill="var(--card)" stroke="var(--ink-3)" stroke-width="1.5"/>
+        <path d="M718 155 A 26 26 0 1 1 766 155" fill="none" stroke="var(--blue)" stroke-width="2.5" marker-end="url(#tarr)"/>
+        <text x="742" y="248" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13.5" fill="var(--ink-2)">One diagonal pair harder &rarr;</text>
+        <text x="742" y="266" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13.5" fill="var(--ink-2)">unbalanced twist spins the frame</text>
+      </svg>
+    </div>
+    <figcaption><b>Orange = spinning faster.</b> Roll and pitch are easy to picture: push harder on one side and the aircraft leans away from it. Yaw is the sneaky one &mdash; it works because a spinning prop twists the whole aircraft the <em>opposite</em> way (Newton's third law). Normally two props spin clockwise and two counter-clockwise so those twists cancel out. Speed up one matching pair and the cancellation breaks, so the aircraft rotates.</figcaption>
+  </figure>
+
+  <div class="box nugget">
+    <b class="lbl">Nugget</b>
+    <p>This is why your props come in two flavours and why fitting one backwards is such a classic disaster. Get a rotation direction wrong and the aircraft doesn't just yaw oddly &mdash; it flips itself into the ground the instant you throttle up, because the controller's corrections are now pushing the wrong way.</p>
+  </div>
+
+  <h3 id="loop">The loop that does all of it</h3>
+  <p>Your flight controller runs the same three steps over and over. That repeating cycle is called the <strong>control loop</strong>, and how fast it runs is the single most important number in the whole project.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 760 260" role="img" aria-label="The control loop: sense with the IMU, compare against what the pilot asked for, decide corrections, act by changing motor speeds, then repeat two thousand times per second.">
+        <defs>
+          <marker id="larr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--blue)"/>
+          </marker>
+        </defs>
+
+        <rect x="26" y="86" width="150" height="80" rx="6" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="2"/>
+        <text x="101" y="115" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="700" fill="currentColor">SENSE</text>
+        <text x="101" y="136" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--ink-2)">IMU: how fast am I</text>
+        <text x="101" y="152" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--ink-2)">tipping, and which way?</text>
+
+        <rect x="242" y="86" width="150" height="80" rx="6" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="2"/>
+        <text x="317" y="115" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="700" fill="currentColor">COMPARE</text>
+        <text x="317" y="136" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--ink-2)">what the pilot asked</text>
+        <text x="317" y="152" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--ink-2)">minus what's happening</text>
+
+        <rect x="458" y="86" width="150" height="80" rx="6" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="2"/>
+        <text x="533" y="115" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="700" fill="currentColor">DECIDE</text>
+        <text x="533" y="136" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--ink-2)">PID maths turns that</text>
+        <text x="533" y="152" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--ink-2)">gap into a correction</text>
+
+        <rect x="622" y="86" width="112" height="80" rx="6" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <text x="678" y="118" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="700" fill="currentColor">ACT</text>
+        <text x="678" y="140" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--ink-2)">4 new motor</text>
+        <text x="678" y="156" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--ink-2)">speeds</text>
+
+        <line x1="176" y1="126" x2="238" y2="126" stroke="var(--blue)" stroke-width="2" marker-end="url(#larr)"/>
+        <line x1="392" y1="126" x2="454" y2="126" stroke="var(--blue)" stroke-width="2" marker-end="url(#larr)"/>
+        <line x1="608" y1="126" x2="618" y2="126" stroke="var(--blue)" stroke-width="2"/>
+
+        <path d="M678 170 L678 214 L101 214 L101 172" fill="none" stroke="var(--blue)" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#larr)"/>
+        <rect x="300" y="198" width="184" height="32" rx="16" fill="var(--card)" stroke="var(--blue)" stroke-width="2"/>
+        <text x="392" y="219" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12.5" font-weight="500" fill="var(--blue)">repeat 2,000&times; / second</text>
+
+        <text x="26" y="52" font-family="Source Sans 3, sans-serif" font-size="14" fill="var(--ink-2)">Every single lap takes about half a millisecond. Your blink takes 600 laps.</text>
+      </svg>
+    </div>
+    <figcaption><b>This loop is the entire firmware.</b> When people talk about "tuning" a drone they mean adjusting how hard the DECIDE box reacts. When they talk about vibration problems, they mean the SENSE box is being lied to. Almost every problem in this build is one of those two boxes having a bad day.</figcaption>
+  </figure>
+
+  <div class="box deep">
+    <b class="lbl">Going deeper</b>
+    <p><strong>PID</strong> stands for Proportional, Integral, Derivative &mdash; three ways of reacting to the same error. P is "how far off am I right now", I is "how long have I been off", D is "how fast is it getting worse". Mix those three and you get a correction that's strong but doesn't overshoot. You'll tune these numbers in step&nbsp;14, and it's the most satisfying part of the whole build.</p>
+  </div>
+
+  <h3 id="domains">The one idea that decides whether it flies</h3>
+  <p>Here's a thing nobody tells beginners, and it's the reason most first-time builds fly badly: <strong>there are two completely different electrical worlds on this aircraft, and they must not touch.</strong></p>
+
+  <div class="cards">
+    <div class="mini" style="border-color:var(--signal)">
+      <h4 style="color:var(--signal)">The quiet side</h4>
+      <p>Your Teensy and the IMU. Tiny voltages, delicate measurements. The IMU is detecting movements smaller than a fly landing on the frame.</p>
+    </div>
+    <div class="mini" style="border-color:var(--power)">
+      <h4 style="color:var(--power)">The loud side</h4>
+      <p>The battery and the motors. Around a hundred amps at peak, switching on and off tens of thousands of times a second. Electrically it is a thunderstorm.</p>
+    </div>
+  </div>
+
+  <p>If those two share a wire, the thunderstorm gets written on top of the delicate measurement, and your flight controller sees movement that isn't happening. It then "corrects" for that imaginary movement, and your aircraft wobbles for no visible reason.</p>
+
+  <p>Throughout this guide, <span style="color:var(--signal);font-weight:600">teal means quiet side</span> and <span style="color:var(--power);font-weight:600">orange means loud side</span>. When you see them in a diagram, that's what it means.</p>
+
+  <div class="box trick">
+    <b class="lbl">Tip</b>
+    <p>If you remember exactly one sentence from this entire guide, make it this one: <strong>every ground wire goes back to one single point, and never from one module to another.</strong> That single habit prevents more flight problems than any amount of tuning. Step&nbsp;5 is where you do it.</p>
+  </div>
+
+  <div class="placard">
+    <b class="lbl">Read this before you buy anything</b>
+    <p>Lithium battery packs can start fires that water will not put out, and a spinning propeller will take skin off a hand without slowing down. This is a genuinely safe hobby if you follow two rules: <strong>props stay off the aircraft until step&nbsp;13</strong>, and <strong>charge batteries in a fireproof bag, never unattended, never overnight.</strong> Nothing in this guide requires you to break either rule. If you are under 18, do the battery charging and the first flight with an adult present.</p>
+  </div>
+</section>
+
+<!-- ================= PART 1 ================= -->
+<section class="part" id="p1">
+  <div class="parthead">
+    <p class="pn">Part 1</p>
+    <h2>Gather your stuff</h2>
+    <p>Order the slow things first, then build while they ship. Prices are ballpark and will drift; search terms are more useful than part numbers, because part numbers go out of stock and search terms don't.</p>
+  </div>
+
+  <h3>The shopping list</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>What</th><th>Search for</th><th class="nw">~Cost</th><th>What to avoid</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Teensy 4.1</b><br><span class="tag b">order first</span></td>
+          <td class="mono">teensy 4.1</td><td class="mono nw">$35</td>
+          <td>Buy from PJRC or an authorised dealer. Cheap clones of Teensy boards are frequently non-functional and there is no cost saving worth the debugging.</td>
+        </tr>
+        <tr>
+          <td><b>IMU breakout</b></td>
+          <td class="mono">GY-521 MPU6050</td><td class="mono nw">$4</td>
+          <td>Get two or three &mdash; they're pennies and clone quality varies. A dud sensor at step 7 is very hard to distinguish from a wiring mistake.</td>
+        </tr>
+        <tr>
+          <td><b>ExpressLRS TX module</b><br><span class="tag b">order first</span></td>
+          <td class="mono">ELRS TX module 2.4GHz</td><td class="mono nw">$35&ndash;60</td>
+          <td>Check it physically fits your transmitter's module bay before ordering.</td>
+        </tr>
+        <tr>
+          <td><b>ExpressLRS receiver</b></td>
+          <td class="mono">ELRS receiver 2.4GHz</td><td class="mono nw">$15&ndash;25</td>
+          <td>Confirm the model can output SBUS, not only CRSF. Most can &mdash; but check the product page.</td>
+        </tr>
+        <tr>
+          <td><b>250mm quad frame kit</b></td>
+          <td class="mono">250 class quadcopter frame carbon</td><td class="mono nw">$30&ndash;60</td>
+          <td>Ideally buy one that comes with motors and ESCs already fitted. Sorting out motor mounting is a separate hobby.</td>
+        </tr>
+        <tr>
+          <td><b>5V buck converter</b></td>
+          <td class="mono">MP1584 buck converter module</td><td class="mono nw">$2</td>
+          <td>Get a 5-pack. You'll adjust one wrong eventually.</td>
+        </tr>
+        <tr>
+          <td><b>Perfboard</b></td>
+          <td class="mono">FR4 perfboard plated through hole</td><td class="mono nw">$8</td>
+          <td>Do <em>not</em> buy the brown phenolic kind. Its pads lift off when heated and vibration finishes the job.</td>
+        </tr>
+        <tr>
+          <td><b>4S LiPo + charger + fire bag</b><br><span class="tag r">safety kit</span></td>
+          <td class="mono">4S 1500mAh LiPo, LiPo safe bag</td><td class="mono nw">$40&ndash;70</td>
+          <td>Never buy a charger without a proper balance function. The fire bag is not optional.</td>
+        </tr>
+        <tr>
+          <td><b>Gyro foam</b></td>
+          <td class="mono">gyro mounting foam RC</td><td class="mono nw">$5</td>
+          <td>Not rigid VHB tape. You want squishy. Step&nbsp;6 explains why this matters more than it sounds like it should.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="chips">Why the Teensy &mdash; and what else would work</h3>
+  <p>This guide uses a Teensy 4.1, but you may already own something else, or just want to know what makes a chip suitable. Four things matter, and the first one matters far more than people expect.</p>
+
+  <ol>
+    <li><strong>A hardware floating-point unit.</strong> The maths that works out which way is up uses decimal numbers, thousands of times a second. A chip with an FPU does that in hardware; one without has to fake it in software, taking <em>tens of times</em> longer. This single feature rules more chips out than everything else combined.</li>
+    <li><strong>Speed with room to spare.</strong> You need 2,000 complete laps a second with headroom left over. Running at 95% capacity means the first thing you add breaks it.</li>
+    <li><strong>Predictable timing.</strong> Nothing else may interrupt the loop at an unpredictable moment. This is why a bare chip beats one running an operating system.</li>
+    <li><strong>Enough pins and timers</strong> for four motors, a sensor, a radio and some spare.</li>
+  </ol>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Board</th><th class="nw">Speed</th><th class="nw">FPU?</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Teensy 4.1</b><br><span class="tag g">this guide</span></td>
+          <td class="mono nw">600 MHz</td><td class="mono nw">yes</td>
+          <td>Wildly more capable than the job needs, and dRehmFlight is written for it. Nothing to port, nothing to debug that you didn't cause yourself.</td>
+        </tr>
+        <tr>
+          <td><b>Teensy 4.0</b><br><span class="tag g">also great</span></td>
+          <td class="mono nw">600 MHz</td><td class="mono nw">yes</td>
+          <td>Identical chip, smaller board, fewer pins, about $10 cheaper. dRehmFlight was originally written on this one. If you own a 4.0, use it &mdash; just re-check pin numbers against the drawing above.</td>
+        </tr>
+        <tr>
+          <td><b>STM32F411 "Black Pill"</b></td>
+          <td class="mono nw">100 MHz</td><td class="mono nw">yes</td>
+          <td><span class="tag a">Real work</span> Genuinely capable and about $6. It's the same family real commercial flight controllers use. You'd be porting the firmware yourself though &mdash; a project in its own right, not a shortcut.</td>
+        </tr>
+        <tr>
+          <td><b>Raspberry Pi Pico 2 (RP2350)</b></td>
+          <td class="mono nw">150 MHz</td><td class="mono nw">yes</td>
+          <td><span class="tag a">Interesting</span> Cheap, two cores, and its PIO feature is superb at generating motor signals in hardware. Needs porting, but it's the most tempting of the alternatives if you want a challenge.</td>
+        </tr>
+        <tr>
+          <td><b>Raspberry Pi Pico (RP2040)</b></td>
+          <td class="mono nw">133 MHz</td><td class="mono nw"><b>no</b></td>
+          <td><span class="tag r">Held back</span> Same lovely PIO, but no floating-point hardware &mdash; so the attitude maths crawls. Possible with clever code, frustrating as a first build.</td>
+        </tr>
+        <tr>
+          <td><b>ESP32-S3</b></td>
+          <td class="mono nw">240 MHz</td><td class="mono nw">yes</td>
+          <td><span class="tag a">Doable</span> Plenty fast, but it runs a small operating system that can interrupt your loop at awkward moments. Manageable if you know what you're doing; one more thing to get right if you don't.</td>
+        </tr>
+        <tr>
+          <td><b>Arduino Uno / Nano</b></td>
+          <td class="mono nw">16 MHz</td><td class="mono nw"><b>no</b></td>
+          <td><span class="tag r">Don't</span> Roughly forty times too slow, no floating-point, and not enough memory. This isn't gatekeeping &mdash; the maths genuinely does not fit. People try this every year and it never flies.</td>
+        </tr>
+        <tr>
+          <td><b>Raspberry Pi (full Linux)</b></td>
+          <td class="mono nw">fast</td><td class="mono nw">yes</td>
+          <td><span class="tag r">Wrong tool</span> Fast enough on paper, but Linux decides when your code runs and it will occasionally pause you for milliseconds. Brilliant as a <em>companion</em> alongside a real flight controller &mdash; cameras, navigation, mapping &mdash; never as the thing keeping you level.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box nugget">
+    <b class="lbl">Nugget</b>
+    <p>The floating-point thing is worth feeling properly. On a chip with an FPU, multiplying two decimals is one instruction &mdash; a couple of nanoseconds. Without one, the compiler builds that same multiplication out of dozens of whole-number steps. Do that a few hundred times per lap, two thousand laps a second, and a chip that looked fast enough on paper simply runs out of time. It's the difference between a calculator and doing long multiplication on paper.</p>
+  </div>
+
+  <div class="box trick">
+    <b class="lbl">Tip &mdash; the honest alternative</b>
+    <p>You can buy a finished flight controller for around $25 and flash Betaflight onto it, and it will fly better than this build on day one. That's a completely reasonable thing to do, and if your goal is "I want a drone", do that instead.</p>
+    <p>The reason to build this one is that at the end you'll understand every wire, every setting and every failure mode &mdash; and you'll be able to change things a commercial board won't let you. You're buying knowledge, not hardware. Just be clear with yourself about which one you're shopping for.</p>
+  </div>
+
+  <h3 id="tools">Tools you'll need</h3>
+  <p>A temperature-controlled soldering iron, a multimeter, wire strippers, small side cutters, heat-shrink, and a bench power supply <em>with an adjustable current limit</em>. That last one is the important one.</p>
+
+  <div class="box trick">
+    <b class="lbl">Tip</b>
+    <p>A current-limited bench supply is the single best investment in this hobby. Set the limit to 200&nbsp;mA and a wiring mistake becomes a supply that politely refuses to deliver power, instead of a puff of smoke and a $35 board in the bin. If you don't own one, this is the moment to buy the cheapest usable one you can find.</p>
+  </div>
+
+  <div class="box nugget">
+    <b class="lbl">Nugget</b>
+    <p>The Teensy 4.1 runs at 600&nbsp;MHz. That is faster than the desktop PCs people used to browse the early internet on, sitting on a board smaller than a stick of gum, costing $35, and you're going to use it to keep a plastic frame from falling over. Computing got weird.</p>
+  </div>
+
+  <h3 id="solder">If you've never soldered before</h3>
+  <p>You'll do maybe fifty joints in this build. None of them are hard, and the whole skill fits in five rules.</p>
+
+  <ol>
+    <li><strong>Heat the parts, not the solder.</strong> Touch the iron to the pad <em>and</em> the wire together for a second or two, then feed solder into the joint. The metal should melt the solder, not the iron.</li>
+    <li><strong>A good joint is shiny and cone-shaped.</strong> A bad one is dull and blobby &mdash; that's a "cold joint", where the solder stuck without properly bonding. It'll work on the bench and fail in the air.</li>
+    <li><strong>Tin your wires first.</strong> Melt a little solder into the bare wire end before joining it to anything. It makes every subsequent step easier.</li>
+    <li><strong>Set the iron around 350&nbsp;&deg;C.</strong> Too cold makes cold joints; too hot lifts pads off the board and damages parts.</li>
+    <li><strong>Wipe the tip often</strong> on a damp sponge or brass wool. A dirty tip transfers almost no heat, which feels exactly like a broken iron.</li>
+  </ol>
+
+  <div class="box trick">
+    <b class="lbl">Tip</b>
+    <p>Practise on a scrap of perfboard before touching the Teensy. Ten throwaway joints will teach you more than an hour of reading, and it means your first real joint isn't also your first joint ever.</p>
+  </div>
+
+  <div class="box warn">
+    <b class="lbl">Watch out</b>
+    <p>Solder fumes are flux burning, not lead, and you shouldn't breathe them either way. Work somewhere ventilated and don't lean directly over the joint. Wash your hands before eating &mdash; especially if you're using leaded solder, which is easier to work with and worth using for a first build.</p>
+  </div>
+</section>
+
+<!-- ================= WIRING REFERENCE ================= -->
+<section class="part" id="wiring">
+  <div class="parthead">
+    <p class="pn">Part 2</p>
+    <h2>The whole wiring map</h2>
+    <p>Everything that connects to anything, in one place. Come back to this constantly &mdash; the build steps will point you here rather than repeating it.</p>
+  </div>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 900 610" role="img" aria-label="Connection map with the Teensy at the centre and six devices around it: the buck converter and battery divider on the left, the IMU and radio receiver on the right, the four ESCs below, and the buzzer and LED at the lower right.">
+        <defs>
+          <marker id="wq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--signal)"/></marker>
+          <marker id="wp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--power)"/></marker>
+        </defs>
+
+        <!-- centre -->
+        <rect x="340" y="210" width="220" height="180" rx="8" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="2.5"/>
+        <text x="450" y="248" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="24" font-weight="800" fill="currentColor">Teensy 4.1</text>
+        <text x="450" y="272" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--ink-2)">the brain</text>
+        <line x1="366" y1="288" x2="534" y2="288" stroke="var(--signal)" stroke-width="1"/>
+        <text x="450" y="310" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink-2)">3.3 V logic only</text>
+        <text x="450" y="330" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--danger)">NOT 5 V tolerant</text>
+        <text x="450" y="358" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">sits in sockets, USB facing out</text>
+
+        <!-- buck -->
+        <rect x="34" y="58" width="196" height="92" rx="7" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <text x="132" y="88" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="700" fill="currentColor">5 V buck</text>
+        <text x="132" y="110" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">fed straight from</text>
+        <text x="132" y="127" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">the battery, its own feed</text>
+        <path d="M230 118 L286 118 L286 238 L334 238" fill="none" stroke="var(--power)" stroke-width="3.5" marker-end="url(#wp)"/>
+        <text x="242" y="180" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--power)">2 wires</text>
+        <text x="242" y="196" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--power)">5V &rarr; VIN</text>
+        <text x="242" y="212" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--power)">GND &rarr; GND</text>
+
+        <!-- vbat divider -->
+        <rect x="34" y="326" width="196" height="86" rx="7" fill="var(--card)" stroke="var(--power)" stroke-width="2"/>
+        <text x="132" y="356" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="16" font-weight="700" fill="currentColor">Battery divider</text>
+        <text x="132" y="378" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">two resistors, so 16.8 V</text>
+        <text x="132" y="395" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">becomes under 3.3 V</text>
+        <path d="M230 362 L334 348" fill="none" stroke="var(--signal)" stroke-width="2" marker-end="url(#wq)"/>
+        <text x="244" y="336" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--signal)">1 wire &rarr; pin 22</text>
+
+        <!-- IMU -->
+        <rect x="670" y="58" width="196" height="104" rx="7" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="2"/>
+        <text x="768" y="88" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="700" fill="currentColor">IMU</text>
+        <text x="768" y="110" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">MPU6050 on foam,</text>
+        <text x="768" y="127" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">wires deliberately slack</text>
+        <text x="768" y="148" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--signal)">runs at 3.3 V, not 5 V</text>
+        <path d="M670 120 L614 120 L614 238 L566 238" fill="none" stroke="var(--signal)" stroke-width="2.5" marker-end="url(#wq)"/>
+        <text x="576" y="164" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--signal)">4 wires</text>
+        <text x="576" y="180" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--signal)">3V3, GND</text>
+        <text x="576" y="196" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--signal)">SDA &rarr; 18</text>
+        <text x="576" y="212" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--signal)">SCL &rarr; 19</text>
+
+        <!-- ELRS -->
+        <rect x="670" y="256" width="196" height="98" rx="7" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="2"/>
+        <text x="768" y="286" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="700" fill="currentColor">ELRS receiver</text>
+        <text x="768" y="308" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">set to SBUS output,</text>
+        <text x="768" y="325" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">not CRSF</text>
+        <text x="768" y="345" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--signal)">powered from 5 V</text>
+        <path d="M670 300 L566 300" fill="none" stroke="var(--signal)" stroke-width="2.5" marker-end="url(#wq)"/>
+        <text x="576" y="282" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--signal)">3 wires: 5V, GND,</text>
+        <text x="576" y="264" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--signal)">SBUS &rarr; pin 7</text>
+
+        <!-- ESCs -->
+        <rect x="284" y="470" width="256" height="112" rx="7" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <text x="412" y="500" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="700" fill="currentColor">4 &times; ESC</text>
+        <text x="412" y="522" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">already on the frame. Power</text>
+        <text x="412" y="539" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">comes from the battery direct,</text>
+        <text x="412" y="556" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">never through the Teensy</text>
+        <text x="412" y="574" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--power)">100 A lives here</text>
+        <path d="M412 466 L412 396" fill="none" stroke="var(--signal)" stroke-width="2.5" marker-end="url(#wq)"/>
+        <text x="200" y="424" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--signal)">4 signal wires: pins 2, 3, 4, 5</text>
+        <text x="200" y="442" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--signal)">+ a ground return for each</text>
+        <text x="200" y="460" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink-3)">signal only &mdash; no power crosses here</text>
+
+        <!-- buzzer + led -->
+        <rect x="640" y="440" width="226" height="86" rx="7" fill="var(--card)" stroke="var(--rule)" stroke-width="2"/>
+        <text x="753" y="470" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="16" font-weight="700" fill="currentColor">Buzzer + arm LED</text>
+        <text x="753" y="492" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">how you know it's armed</text>
+        <text x="753" y="512" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">from across the field</text>
+        <path d="M640 470 L586 400" fill="none" stroke="var(--signal)" stroke-width="2" marker-end="url(#wq)"/>
+        <text x="600" y="424" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--signal)">pin 6, pin 9</text>
+
+        <text x="34" y="600" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--signal)" font-weight="600">Teal = quiet side (signals, sensors)</text>
+        <text x="34" y="30" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--power)" font-weight="600">Orange = loud side (battery current)</text>
+      </svg>
+    </div>
+    <figcaption><b>Notice what does <em>not</em> cross the middle.</b> The ESCs get their power straight from the battery and only signal wires reach the Teensy. That's the quiet-side/loud-side rule from Part 0 drawn as an actual wiring plan &mdash; and it's the single biggest difference between a build that flies well and one that mysteriously wobbles.</figcaption>
+  </figure>
+
+  <h3 id="pins">Every pin, on the actual board</h3>
+  <p>Here is the same information as a picture of the board itself, with the USB socket at the top so it matches how the Teensy sits on your perfboard. Coloured pads are pins you'll use; grey ones you leave alone.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 960 700" role="img" aria-label="Pinout drawing of the Teensy 4.1 with the USB connector at the top. On the left edge, pins 2 to 5 go to the four motor signals, pin 6 to the buzzer, pin 7 to the radio receiver, pin 8 to telemetry and pin 9 to the arming LED. On the right edge, VIN and ground come from the buck converter, 3.3 volts and pins 18 and 19 go to the IMU, and pin 22 reads the battery voltage.">
+
+        <!-- board -->
+        <rect x="390" y="100" width="180" height="540" rx="10" fill="var(--card)" stroke="currentColor" stroke-width="2.5"/>
+        <rect x="452" y="70" width="56" height="32" rx="5" fill="var(--card-2)" stroke="currentColor" stroke-width="2"/>
+        <text x="480" y="60" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink-3)">USB</text>
+        <text x="480" y="126" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="15" font-weight="800" fill="currentColor">TEENSY 4.1</text>
+        <text x="480" y="620" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">board continues &mdash; pins 24-41</text>
+        <text x="480" y="636" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">all unused in this build</text>
+
+        <!-- ============ LEFT PADS ============ -->
+        <g font-family="IBM Plex Mono, monospace" font-size="12">
+          <rect x="394" y="152" width="18" height="13" rx="2" fill="var(--ink-3)"/><text x="418" y="163" fill="var(--ink-3)">GND</text>
+          <rect x="394" y="186" width="18" height="13" rx="2" fill="var(--sunk)" stroke="var(--ink-3)"/><text x="418" y="197" fill="var(--ink-3)">0</text>
+          <rect x="394" y="220" width="18" height="13" rx="2" fill="var(--sunk)" stroke="var(--ink-3)"/><text x="418" y="231" fill="var(--ink-3)">1</text>
+          <rect x="394" y="254" width="18" height="13" rx="2" fill="#8DA0AC"/><text x="418" y="265" font-weight="500" fill="currentColor">2</text>
+          <rect x="394" y="288" width="18" height="13" rx="2" fill="#8DA0AC"/><text x="418" y="299" font-weight="500" fill="currentColor">3</text>
+          <rect x="394" y="322" width="18" height="13" rx="2" fill="#8DA0AC"/><text x="418" y="333" font-weight="500" fill="currentColor">4</text>
+          <rect x="394" y="356" width="18" height="13" rx="2" fill="#8DA0AC"/><text x="418" y="367" font-weight="500" fill="currentColor">5</text>
+          <rect x="394" y="390" width="18" height="13" rx="2" fill="#D07C22"/><text x="418" y="401" font-weight="500" fill="currentColor">6</text>
+          <rect x="394" y="424" width="18" height="13" rx="2" fill="#C79A14"/><text x="418" y="435" font-weight="500" fill="currentColor">7</text>
+          <rect x="394" y="458" width="18" height="13" rx="2" fill="#46996A"/><text x="418" y="469" font-weight="500" fill="currentColor">8</text>
+          <rect x="394" y="492" width="18" height="13" rx="2" fill="#4A90D0"/><text x="418" y="503" font-weight="500" fill="currentColor">9</text>
+          <rect x="394" y="526" width="18" height="13" rx="2" fill="var(--sunk)" stroke="var(--ink-3)"/><text x="418" y="537" fill="var(--ink-3)">10</text>
+          <rect x="394" y="560" width="18" height="13" rx="2" fill="var(--sunk)" stroke="var(--ink-3)"/><text x="418" y="571" fill="var(--ink-3)">11</text>
+        </g>
+
+        <!-- ============ RIGHT PADS ============ -->
+        <g font-family="IBM Plex Mono, monospace" font-size="12" text-anchor="end">
+          <rect x="548" y="152" width="18" height="13" rx="2" fill="#D0503A"/><text x="542" y="163" font-weight="500" fill="currentColor">VIN</text>
+          <rect x="548" y="186" width="18" height="13" rx="2" fill="var(--ink)"/><text x="542" y="197" font-weight="500" fill="currentColor">GND</text>
+          <rect x="548" y="220" width="18" height="13" rx="2" fill="#D0503A"/><text x="542" y="231" font-weight="500" fill="currentColor">3.3V</text>
+          <rect x="548" y="254" width="18" height="13" rx="2" fill="var(--sunk)" stroke="var(--ink-3)"/><text x="542" y="265" fill="var(--ink-3)">23</text>
+          <rect x="548" y="288" width="18" height="13" rx="2" fill="#9269C9"/><text x="542" y="299" font-weight="500" fill="currentColor">22</text>
+          <rect x="548" y="322" width="18" height="13" rx="2" fill="var(--sunk)" stroke="var(--ink-3)"/><text x="542" y="333" fill="var(--ink-3)">21</text>
+          <rect x="548" y="356" width="18" height="13" rx="2" fill="var(--sunk)" stroke="var(--ink-3)"/><text x="542" y="367" fill="var(--ink-3)">20</text>
+          <rect x="548" y="390" width="18" height="13" rx="2" fill="#46996A"/><text x="542" y="401" font-weight="500" fill="currentColor">19</text>
+          <rect x="548" y="424" width="18" height="13" rx="2" fill="#4A90D0"/><text x="542" y="435" font-weight="500" fill="currentColor">18</text>
+          <rect x="548" y="458" width="18" height="13" rx="2" fill="var(--sunk)" stroke="var(--ink-3)"/><text x="542" y="469" fill="var(--ink-3)">17</text>
+          <rect x="548" y="492" width="18" height="13" rx="2" fill="var(--sunk)" stroke="var(--ink-3)"/><text x="542" y="503" fill="var(--ink-3)">16</text>
+          <rect x="548" y="526" width="18" height="13" rx="2" fill="var(--sunk)" stroke="var(--ink-3)"/><text x="542" y="537" fill="var(--ink-3)">15</text>
+          <rect x="548" y="560" width="18" height="13" rx="2" fill="var(--sunk)" stroke="var(--ink-3)"/><text x="542" y="571" fill="var(--ink-3)">13</text>
+        </g>
+
+        <!-- ============ LEFT WIRES + DEVICES ============ -->
+        <rect x="56" y="240" width="252" height="140" rx="7" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <text x="182" y="268" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="16" font-weight="700" fill="currentColor">4 ESC signal wires</text>
+        <text x="182" y="291" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">M1 M2 M3 M4, in order</text>
+        <text x="182" y="313" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">signal only &mdash; ESC power</text>
+        <text x="182" y="331" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">comes from the battery</text>
+        <text x="182" y="360" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--power)">white wires</text>
+        <g stroke="#8DA0AC" stroke-width="2.5" fill="none">
+          <path d="M394 258 L308 258"/><path d="M394 292 L308 292"/><path d="M394 326 L308 326"/><path d="M394 360 L308 360"/>
+        </g>
+
+        <rect x="120" y="392" width="188" height="40" rx="7" fill="var(--card)" stroke="#D07C22" stroke-width="2"/>
+        <text x="214" y="410" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="14" font-weight="700" fill="currentColor">Buzzer</text>
+        <text x="214" y="426" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">via a small FET &mdash; orange</text>
+        <path d="M394 396 L308 410" stroke="#D07C22" stroke-width="2.5" fill="none"/>
+
+        <rect x="56" y="444" width="252" height="76" rx="7" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="2"/>
+        <text x="182" y="468" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="15" font-weight="700" fill="currentColor">ELRS receiver</text>
+        <text x="182" y="488" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#C79A14">SBUS in &rarr; pin 7 (yellow)</text>
+        <text x="182" y="508" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#46996A">telemetry &rarr; pin 8 (green)</text>
+        <path d="M394 430 L308 470" stroke="#C79A14" stroke-width="2.5" fill="none"/>
+        <path d="M394 464 L308 490" stroke="#46996A" stroke-width="2.5" fill="none"/>
+
+        <rect x="120" y="534" width="188" height="42" rx="7" fill="var(--card)" stroke="#4A90D0" stroke-width="2"/>
+        <text x="214" y="553" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="14" font-weight="700" fill="currentColor">Armed LED</text>
+        <text x="214" y="569" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">via a resistor &mdash; blue</text>
+        <path d="M394 498 L308 552" stroke="#4A90D0" stroke-width="2.5" fill="none"/>
+
+        <!-- ============ RIGHT WIRES + DEVICES ============ -->
+        <rect x="700" y="130" width="240" height="86" rx="7" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <text x="820" y="156" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="16" font-weight="700" fill="currentColor">5 V buck</text>
+        <text x="820" y="177" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#D0503A">5 V &rarr; VIN (red)</text>
+        <text x="820" y="197" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">GND &rarr; GND (black)</text>
+        <path d="M566 158 L700 158" stroke="#D0503A" stroke-width="2.5" fill="none"/>
+        <path d="M566 192 L660 192 L660 178 L700 178" stroke="currentColor" stroke-width="2.5" fill="none"/>
+
+        <rect x="700" y="290" width="240" height="120" rx="7" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="2"/>
+        <text x="820" y="316" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="16" font-weight="700" fill="currentColor">IMU</text>
+        <text x="820" y="337" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#D0503A">3.3 V &mdash; NOT 5 V</text>
+        <text x="820" y="356" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">GND (black)</text>
+        <text x="820" y="375" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#46996A">SCL &rarr; pin 19 (green)</text>
+        <text x="820" y="394" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#4A90D0">SDA &rarr; pin 18 (blue)</text>
+        <path d="M566 226 L616 226 L616 306 L700 306" stroke="#D0503A" stroke-width="2.5" fill="none"/>
+        <path d="M566 192 L596 192 L596 326 L700 326" stroke="currentColor" stroke-width="2.5" fill="none"/>
+        <path d="M566 396 L640 396 L640 350 L700 350" stroke="#46996A" stroke-width="2.5" fill="none"/>
+        <path d="M566 430 L664 430 L664 372 L700 372" stroke="#4A90D0" stroke-width="2.5" fill="none"/>
+
+        <rect x="700" y="452" width="240" height="70" rx="7" fill="var(--card)" stroke="#9269C9" stroke-width="2"/>
+        <text x="820" y="477" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="15" font-weight="700" fill="currentColor">Battery divider</text>
+        <text x="820" y="497" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#9269C9">&rarr; pin 22 (purple)</text>
+        <text x="820" y="514" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--danger)">must stay under 3.3 V</text>
+        <path d="M566 294 L688 294 L688 480 L700 480" stroke="#9269C9" stroke-width="2.5" fill="none"/>
+
+        <!-- note -->
+        <text x="56" y="674" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--ink-2)">Every signal you send out lives on the left edge. Everything you power or sense lives on the right. That is not luck &mdash; the pins were chosen that way.</text>
+      </svg>
+    </div>
+    <figcaption><b>Check this against the pinout card that ships with your Teensy before you wire anything.</b> The drawing shows the pins this build uses and where they sit, but the card that came in the box is the authority &mdash; and a wrong pin on a board that isn't 5&nbsp;V tolerant is an expensive way to learn. Note the tidy split: outputs down the left edge, power and sensors down the right, so your wiring never has to cross the board.</figcaption>
+  </figure>
+
+  <h3>The same thing as a table</h3>
+  <p>dRehmFlight has its own pin defaults in a config block near the top of the file &mdash; make the two agree. It is much easier to change a number in code than to unsolder a wire, so if in doubt, change the code.</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Connects to</th><th class="nw">Teensy pin</th><th class="nw">Wire colour</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Buck 5&nbsp;V output</td><td class="mono nw">VIN</td><td class="mono nw">red</td><td>The Teensy makes its own 3.3&nbsp;V internally from this.</td></tr>
+        <tr><td>Ground (to the star dot)</td><td class="mono nw">GND</td><td class="mono nw">black</td><td>Straight to the dot from step 5. Never daisy-chained.</td></tr>
+        <tr><td>Motor 1 signal</td><td class="mono nw">2</td><td class="mono nw">white</td><td rowspan="4">Keep the physical order matching the mixer order, and label the headers with a marker. Future you will be grateful.</td></tr>
+        <tr><td>Motor 2 signal</td><td class="mono nw">3</td><td class="mono nw">white</td></tr>
+        <tr><td>Motor 3 signal</td><td class="mono nw">4</td><td class="mono nw">white</td></tr>
+        <tr><td>Motor 4 signal</td><td class="mono nw">5</td><td class="mono nw">white</td></tr>
+        <tr><td>Buzzer (through a small FET)</td><td class="mono nw">6</td><td class="mono nw">orange</td><td>Do not drive a buzzer straight off a pin &mdash; it draws more current than the pin can give.</td></tr>
+        <tr><td>ELRS receiver SBUS out</td><td class="mono nw">7</td><td class="mono nw">yellow</td><td>Serial2 RX. This is the one that bites &mdash; see the inversion warning in step 9.</td></tr>
+        <tr><td>Telemetry back to receiver</td><td class="mono nw">8</td><td class="mono nw">green</td><td>Unused for now. Wire it anyway so the CRSF upgrade later costs no rework.</td></tr>
+        <tr><td>Armed-state LED</td><td class="mono nw">9</td><td class="mono nw">blue</td><td>Through a resistor. One LED, one job, nothing else drives it.</td></tr>
+        <tr><td>IMU SDA</td><td class="mono nw">18</td><td class="mono nw">blue</td><td rowspan="2">The default I&sup2;C bus, which is what dRehmFlight expects. Add 2.2&nbsp;k pull-up resistors to 3.3&nbsp;V if your breakout doesn't have them.</td></tr>
+        <tr><td>IMU SCL</td><td class="mono nw">19</td><td class="mono nw">green</td></tr>
+        <tr><td>Battery voltage divider</td><td class="mono nw">22 (A8)</td><td class="mono nw">purple</td><td>Analog input. Must never exceed 3.3&nbsp;V &mdash; size the resistors so a full pack lands around 3.0&nbsp;V.</td></tr>
+        <tr><td>Current sensor (optional)</td><td class="mono nw">23 (A9)</td><td class="mono nw">grey</td><td>Skip it for now, but leave the pin free.</td></tr>
+        <tr><td>IMU 3.3&nbsp;V</td><td class="mono nw">3V3</td><td class="mono nw">red</td><td><b>Not</b> 5&nbsp;V. Powering the IMU from 5&nbsp;V puts 5&nbsp;V on the data lines and kills the Teensy.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box warn">
+    <b class="lbl">Watch out</b>
+    <p>Pin&nbsp;13 is both the SPI clock line and the onboard LED. You aren't using SPI in this build, so it's free &mdash; but if you later switch to the fancier IMU, remember that the LED will flicker on every sensor read. That's normal, not a fault.</p>
+  </div>
+
+  <div class="box trick">
+    <b class="lbl">Tip</b>
+    <p>Stick to the wire colours in that table even where it feels fussy. Six months from now, when something breaks at a field with no laptop, "the yellow one is the radio" is the difference between a five-minute fix and packing up early.</p>
+  </div>
+
+  <h3 id="firmware">What you actually change in the firmware</h3>
+  <p>dRehmFlight arrives as a single large Arduino sketch with a configuration block near the top. You are not going to write flight code &mdash; you're going to set about eight things and leave the rest alone.</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Find the setting for</th><th>Set it to</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td><b>Which IMU</b></td><td class="mono">MPU6050 over I&sup2;C</td><td>There are several options commented out. Uncomment yours, comment out the rest.</td></tr>
+        <tr><td><b>Gyro range</b></td><td class="mono">500 &deg;/s</td><td>How fast a rotation the sensor can measure before it maxes out. 500 is a sane starting point for a quad.</td></tr>
+        <tr><td><b>Accelerometer range</b></td><td class="mono">2 g or 4 g</td><td>Lower range means finer resolution. You aren't doing aerobatics yet.</td></tr>
+        <tr><td><b>Receiver protocol</b></td><td class="mono">SBUS</td><td>Matches the ELRS receiver set to SBUS mode.</td></tr>
+        <tr><td><b>Motor pins</b></td><td class="mono">2, 3, 4, 5</td><td>Match the table above, or change the table to match the code. Either way, make them agree.</td></tr>
+        <tr><td><b>Aircraft type / mixer</b></td><td class="mono">quadcopter X</td><td>Tells the firmware which motor to speed up for which movement.</td></tr>
+        <tr><td><b>Loop rate</b></td><td class="mono">2000 Hz</td><td>Usually already the default. Confirm it rather than assume.</td></tr>
+        <tr><td><b>PID gains</b></td><td class="mono">leave as shipped</td><td>Starting values. You'll tune these in step 14, after it flies.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box warn">
+    <b class="lbl">Watch out</b>
+    <p>Exact names of these settings differ between versions of dRehmFlight, so don't go hunting for an exact string from this table. Open the file, scroll to the config block at the top, and read it &mdash; it's commented in plain English and takes about ten minutes. That ten minutes is the most valuable reading in the whole project.</p>
+  </div>
+
+  <div class="box deep">
+    <b class="lbl">Going deeper</b>
+    <p>Resist the urge to tidy the code before it flies. Every line you change is a line that used to be flight-proven and now isn't, and when the aircraft misbehaves you won't know whether it's your wiring or your edit. Get it in the air first, unchanged. Refactor later, from a known-good starting point.</p>
+  </div>
+</section>
+
+<!-- ================= PART 2 ================= -->
+<section class="part">
+  <div class="parthead">
+    <p class="pn">Part 3</p>
+    <h2>Build it</h2>
+    <p>Fourteen steps. Each one is a single sitting and ends with something you can check, so if it breaks you always know which step broke it. Don't skip ahead &mdash; the order is the whole point.</p>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step" id="s1">
+    <header>
+      <div class="n">1</div>
+      <div><h3>Set up so you can't hurt yourself</h3><p class="meta">20 min &middot; no soldering yet</p></div>
+    </header>
+    <div class="body">
+      <p>Before any electronics: clear a bench, put the LiPo in its fire bag on the far side of the room, and put the propellers in a drawer. Actually in a drawer. Not on the shelf where you can see them.</p>
+      <p>Now set your bench supply to <strong>5&nbsp;V with a 200&nbsp;mA current limit</strong> and confirm the limit works by shorting the leads together briefly &mdash; the supply should clamp and show ~200&nbsp;mA rather than sparking.</p>
+      <div class="box warn">
+        <b class="lbl">Watch out</b>
+        <p>The Teensy 4.1 is a <strong>3.3&nbsp;volt</strong> board and it is <strong>not 5&nbsp;volt tolerant</strong>. There is no protection diode inside. Putting 5&nbsp;V on any signal pin kills it instantly and permanently. This catches experienced people, because older Teensy boards <em>were</em> tolerant. Meter every signal line before it touches a pin &mdash; it takes ninety seconds and saves $35 and a week of waiting.</p>
+      </div>
+    </div>
+    <div class="done"><b>You're done when</b><p>Props are in a drawer, LiPo is bagged, and your supply clamps at 200&nbsp;mA when you short it.</p></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step" id="s2">
+    <header>
+      <div class="n">2</div>
+      <div><h3>Test the power path with nothing valuable attached</h3><p class="meta">30 min &middot; first soldering</p></div>
+    </header>
+    <div class="body">
+      <p>Solder the buck converter to your perfboard at one end, with the battery connector next to it. Nothing else on the board yet.</p>
+      <p>Feed it from the bench supply &mdash; not the LiPo &mdash; at around 12&nbsp;V, and turn the little adjustment screw on the buck until the output reads exactly <strong>5.00&nbsp;V</strong> on your meter. These modules ship set to random voltages, and some ship set high enough to destroy whatever you plug in.</p>
+      <div class="box trick">
+        <b class="lbl">Tip</b>
+        <p>Turn the adjustment screw slowly and watch the meter as you go. Many of these modules are multi-turn and feel like nothing is happening for the first several rotations. Nothing <em>is</em> happening. Keep going.</p>
+      </div>
+      <p>Then check polarity at the socket where the Teensy will sit. Red probe on the pin that will be 5&nbsp;V, black on the pin that will be ground. If that reads negative, you have the buck backwards and you just saved your board.</p>
+      <div class="photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L17 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
+        <b>Photo 01</b>
+        <span>Your buck converter soldered in, meter probes on the output showing 5.00 V.</span>
+        <em>step-02-power-path.jpg</em>
+      </div>
+    </div>
+    <div class="done"><b>You're done when</b><p>Meter reads 5.00&nbsp;V at the socket, correct polarity, and the supply is drawing only a few milliamps.</p></div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step" id="s3">
+    <header>
+      <div class="n">3</div>
+      <div><h3>Make a light blink &mdash; your first win</h3><p class="meta">30 min &middot; first code</p></div>
+    </header>
+    <div class="body">
+      <p>Install the Arduino IDE and then <strong>Teensyduino</strong>, which adds Teensy support. Plug the Teensy into your computer with a USB cable &mdash; not into your perfboard yet &mdash; and load the Blink example.</p>
+      <p>Uploading a Teensy is slightly unusual: the Teensy Loader window pops up and sometimes asks you to physically press the button on the board. Do that now, while nothing else can be blamed.</p>
+      <p>The onboard LED should blink. That single blink proves your computer, your USB cable, your toolchain and your board all work &mdash; four things at once, none of which you now have to wonder about later.</p>
+      <div class="box nugget">
+        <b class="lbl">Nugget</b>
+        <p>There's a reason every embedded project starts with a blinking light. It's the smallest possible program that proves the entire chain from your keyboard to physical reality is intact. Old-timers call it "hello world for hardware", and skipping it is how people spend a Saturday debugging a flight controller that was never running any code at all.</p>
+      </div>
+      <div class="photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L17 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
+        <b>Photo 02</b>
+        <span>The Teensy with its LED lit. This is the "it's alive" picture &mdash; everyone should have one.</span>
+        <em>step-03-first-blink.jpg</em>
+      </div>
+    </div>
+    <div class="done"><b>You're done when</b><p>The onboard LED blinks once per second and the IDE reports a successful upload.</p></div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step" id="s4">
+    <header>
+      <div class="n">4</div>
+      <div><h3>Plan the board before you solder it</h3><p class="meta">45 min &middot; layout + sockets</p></div>
+    </header>
+    <div class="body">
+      <p>This is the step people skip, and it's the step that decides whether the aircraft flies well. You're going to place parts so the loud side and the quiet side stay far apart.</p>
+
+      <figure>
+        <div class="figbox">
+          <svg viewBox="0 0 720 400" role="img" aria-label="Top-down plan of the perfboard: power components at the left, an empty keep-out band, the Teensy in the middle, and the IMU on foam at the far right corner.">
+            <rect x="30" y="40" width="640" height="300" rx="6" fill="var(--card)" stroke="currentColor" stroke-width="2"/>
+            <text x="30" y="28" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink-3)">roughly 80 &times; 45 mm of perfboard, seen from above</text>
+
+            <rect x="48" y="70" width="150" height="244" rx="5" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+            <text x="58" y="90" font-family="IBM Plex Mono, monospace" font-size="10.5" letter-spacing="1.2" fill="var(--power)">LOUD SIDE</text>
+            <rect x="62" y="102" width="70" height="32" rx="4" fill="var(--card)" stroke="var(--power)" stroke-width="1.4"/>
+            <text x="97" y="123" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor">battery</text>
+            <rect x="62" y="146" width="122" height="46" rx="4" fill="var(--card)" stroke="var(--power)" stroke-width="1.4"/>
+            <text x="123" y="167" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="14" font-weight="700" fill="currentColor">5V buck</text>
+            <text x="123" y="184" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">the noisy bit</text>
+            <circle cx="88" cy="228" r="16" fill="var(--card)" stroke="var(--power)" stroke-width="1.4"/>
+            <text x="88" y="232" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="currentColor">cap</text>
+            <circle cx="136" cy="228" r="16" fill="var(--card)" stroke="var(--power)" stroke-width="1.4"/>
+            <text x="136" y="232" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="currentColor">cap</text>
+            <circle cx="112" cy="288" r="8" fill="currentColor"/>
+            <text x="128" y="285" font-family="IBM Plex Mono, monospace" font-size="10" font-weight="500" fill="currentColor">STAR</text>
+            <text x="128" y="297" font-family="IBM Plex Mono, monospace" font-size="10" font-weight="500" fill="currentColor">GROUND</text>
+
+            <rect x="214" y="70" width="34" height="244" fill="none" stroke="var(--ink-3)" stroke-width="1.2" stroke-dasharray="5 4"/>
+            <text x="231" y="196" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)" transform="rotate(-90 231 196)">KEEP THIS EMPTY</text>
+
+            <rect x="266" y="112" width="188" height="176" rx="5" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="2"/>
+            <text x="276" y="132" font-family="IBM Plex Mono, monospace" font-size="10.5" letter-spacing="1.2" fill="var(--signal)">QUIET SIDE</text>
+            <rect x="284" y="144" width="152" height="126" rx="4" fill="var(--card)" stroke="var(--signal)" stroke-width="1.6"/>
+            <text x="360" y="200" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="700" fill="currentColor">Teensy 4.1</text>
+            <text x="360" y="221" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">on sockets, not</text>
+            <text x="360" y="237" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">soldered down</text>
+            <text x="360" y="258" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-3)">USB faces out &darr;</text>
+
+            <rect x="486" y="70" width="164" height="112" rx="5" fill="var(--card)" stroke="var(--signal)" stroke-width="2" stroke-dasharray="7 4"/>
+            <text x="496" y="90" font-family="IBM Plex Mono, monospace" font-size="10.5" letter-spacing="1.2" fill="var(--signal)">IMU ISLAND</text>
+            <rect x="524" y="102" width="88" height="42" rx="4" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="1.4"/>
+            <text x="568" y="128" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="15" font-weight="700" fill="currentColor">IMU</text>
+            <text x="568" y="164" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">floating on foam</text>
+            <path d="M524 124 C 496 124 486 210 452 210" fill="none" stroke="var(--signal)" stroke-width="1.4"/>
+            <path d="M530 144 C 508 172 486 218 452 218" fill="none" stroke="var(--signal)" stroke-width="1.4"/>
+
+            <rect x="486" y="200" width="164" height="114" rx="5" fill="none" stroke="var(--rule)" stroke-width="1.4"/>
+            <text x="496" y="220" font-family="IBM Plex Mono, monospace" font-size="10.5" letter-spacing="1.2" fill="var(--ink-3)">PLUGS</text>
+            <rect x="498" y="232" width="140" height="24" rx="4" fill="var(--card)" stroke="var(--signal)" stroke-width="1.3"/>
+            <text x="568" y="248" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">4 motor signals</text>
+            <rect x="498" y="264" width="140" height="24" rx="4" fill="var(--card)" stroke="var(--signal)" stroke-width="1.3"/>
+            <text x="568" y="280" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">radio receiver</text>
+          </svg>
+        </div>
+        <figcaption><b>Loud on the left, quiet on the right, nothing in the middle.</b> The empty band isn't wasted space &mdash; being empty is its entire job. And notice the Teensy sits on <em>sockets</em>: if you ever kill it, you swap it in thirty seconds instead of desoldering 40 pins.</figcaption>
+      </figure>
+
+      <p>Solder the sockets for the Teensy now, and the connector headers on the right edge. Leave the middle band bare. Keep the <a href="#wiring">wiring map</a> open beside you &mdash; it tells you which header is which.</p>
+      <div class="photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L17 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
+        <b>Photo 03</b>
+        <span>Your board with sockets and headers in, before any wiring. Take it from directly above so you can compare against the plan.</span>
+        <em>step-04-layout.jpg</em>
+      </div>
+    </div>
+    <div class="done"><b>You're done when</b><p>Sockets and headers are soldered, the Teensy plugs in and out easily, and the middle band is empty.</p></div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step" id="s5">
+    <header>
+      <div class="n">5</div>
+      <div><h3>Wire the ground the right way</h3><p class="meta">45 min &middot; the important one</p></div>
+    </header>
+    <div class="body">
+      <p>Remember the one sentence from Part 0? This is where it happens. Take a marker and put a dot on the perfboard at your star ground point, right by the battery connector. Every single ground wire in this build ends at that dot.</p>
+
+      <figure>
+        <div class="figbox">
+          <svg viewBox="0 0 800 300" role="img" aria-label="Two grounding methods compared. Chained grounds let motor current flow through the sensor's ground wire, adding false voltage. Star grounding gives each part its own wire to one point.">
+            <rect x="12" y="12" width="376" height="276" rx="6" fill="none" stroke="var(--danger)" stroke-width="2"/>
+            <text x="28" y="40" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="800" fill="var(--danger)">WRONG</text>
+            <text x="28" y="60" font-family="Source Sans 3, sans-serif" font-size="13.5" fill="var(--ink-2)">grounds chained one to the next</text>
+
+            <rect x="28" y="84" width="66" height="42" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <text x="61" y="110" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor">battery</text>
+            <rect x="128" y="84" width="60" height="42" rx="5" fill="var(--power-soft)" stroke="var(--power)" stroke-width="1.6"/>
+            <text x="158" y="110" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor">motors</text>
+            <rect x="222" y="84" width="56" height="42" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <text x="250" y="110" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor">buck</text>
+            <rect x="312" y="84" width="56" height="42" rx="5" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="1.6"/>
+            <text x="340" y="110" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor">IMU</text>
+            <line x1="94" y1="105" x2="124" y2="105" stroke="var(--power)" stroke-width="4"/>
+            <line x1="188" y1="105" x2="218" y2="105" stroke="var(--power)" stroke-width="4"/>
+            <line x1="278" y1="105" x2="308" y2="105" stroke="var(--power)" stroke-width="4"/>
+
+            <text x="200" y="156" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--power)">100 amps of motor current flows through here</text>
+            <line x1="28" y1="196" x2="368" y2="196" stroke="var(--rule)" stroke-width="1"/>
+            <text x="28" y="187" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-3)">what "zero volts" actually looks like:</text>
+            <path d="M61 196 L104 196 L112 208 L122 188 L136 212 L150 190 L166 206 L182 192 L200 210 L216 194 L236 208 L258 192 L282 212 L306 194 L330 210 L340 200" fill="none" stroke="var(--danger)" stroke-width="2.2"/>
+            <text x="368" y="236" text-anchor="end" font-family="Source Sans 3, sans-serif" font-size="13.5" font-weight="600" fill="var(--danger)">the IMU sees this noise as motion</text>
+            <text x="368" y="256" text-anchor="end" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--ink-2)">and "corrects" for a wobble that isn't there</text>
+
+            <rect x="412" y="12" width="376" height="276" rx="6" fill="none" stroke="var(--pass)" stroke-width="2"/>
+            <text x="428" y="40" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="800" fill="var(--pass)">RIGHT</text>
+            <text x="428" y="60" font-family="Source Sans 3, sans-serif" font-size="13.5" fill="var(--ink-2)">every wire back to one dot</text>
+
+            <circle cx="486" cy="176" r="13" fill="currentColor"/>
+            <text x="486" y="210" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" font-weight="500" fill="currentColor">THE DOT</text>
+
+            <rect x="648" y="76" width="72" height="40" rx="5" fill="var(--power-soft)" stroke="var(--power)" stroke-width="1.6"/>
+            <text x="684" y="101" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor">motors</text>
+            <rect x="648" y="156" width="72" height="40" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <text x="684" y="181" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor">buck</text>
+            <rect x="648" y="236" width="72" height="40" rx="5" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="1.6"/>
+            <text x="684" y="261" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor">IMU</text>
+
+            <line x1="498" y1="168" x2="644" y2="100" stroke="var(--power)" stroke-width="4"/>
+            <line x1="500" y1="176" x2="644" y2="176" stroke="currentColor" stroke-width="2"/>
+            <line x1="498" y1="184" x2="644" y2="252" stroke="var(--signal)" stroke-width="2"/>
+            <text x="740" y="256" font-family="Source Sans 3, sans-serif" font-size="13.5" font-weight="600" fill="var(--pass)">clean</text>
+          </svg>
+        </div>
+        <figcaption><b>Same parts, same schematic, completely different aircraft.</b> On the left the IMU's "zero volts" is at the far end of a wire carrying the motors' return current, so it wobbles by a few thousandths of a volt &mdash; which is exactly the size of the signals the IMU is trying to measure. On the right, the only current in the IMU's ground wire is the IMU's own.</figcaption>
+      </figure>
+
+      <div class="box trick">
+        <b class="lbl">Tip</b>
+        <p>Twist your battery pair together along its whole length, and twist each motor signal wire with its own ground return. A twisted pair encloses almost no loop area, and loop area is what picks up interference. It takes two extra minutes and it looks properly professional.</p>
+      </div>
+      <div class="photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L17 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
+        <b>Photo 04</b>
+        <span>Close-up of your star ground point with all the ground wires arriving at it. This is the photo other builders will actually want to see.</span>
+        <em>step-05-star-ground.jpg</em>
+      </div>
+    </div>
+    <div class="done"><b>You're done when</b><p>Every ground wire physically ends at the dot, and you can trace each one with a finger without passing through another module.</p></div>
+  </div>
+
+  <!-- STEP 6 -->
+  <div class="step" id="s6">
+    <header>
+      <div class="n">6</div>
+      <div><h3>Float the IMU on foam</h3><p class="meta">20 min &middot; deceptively important</p></div>
+    </header>
+    <div class="body">
+      <p>Do not solder the IMU flat to the board. Stick it to a small square of gyro foam, and connect it with four wires left deliberately <strong>slack</strong>.</p>
+      <p>Here's why, and it's genuinely interesting: spinning propellers shake the frame at a very specific frequency. On a 250-size quad with 5-inch props at full throttle, each blade passes a given point roughly <strong>667 times a second</strong>. That shaking travels through the frame into your board, and the IMU cannot tell the difference between "the aircraft is moving" and "I am being vibrated".</p>
+      <p>The foam is a filter. It lets slow movements through &mdash; the aircraft actually tilting, which happens at a few times a second &mdash; and blocks fast ones.</p>
+
+      <div class="box warn">
+        <b class="lbl">Watch out</b>
+        <p>Four <em>taut</em> wires are four springs, and they will stiffen your mount right back up, undoing the foam entirely. This is the most common way a good soft mount gets accidentally defeated. Leave visible slack in every wire.</p>
+      </div>
+      <div class="box nugget">
+        <b class="lbl">Nugget</b>
+        <p>The "gyro" in your IMU has no spinning wheel in it. It's a MEMS device &mdash; a microscopic silicon comb, vibrating, that gets deflected sideways when you rotate it. There's a machine smaller than a grain of salt doing that inside a $4 chip, and the same technology is why your phone knows which way up it is.</p>
+      </div>
+      <div class="photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L17 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
+        <b>Photo 05</b>
+        <span>The IMU on its foam island with slack wires. Side-on shows the slack best.</span>
+        <em>step-06-imu-island.jpg</em>
+      </div>
+    </div>
+    <div class="done"><b>You're done when</b><p>You can press the IMU down gently and feel it move, and every wire has visible slack.</p></div>
+  </div>
+
+  <!-- STEP 7 -->
+  <div class="step" id="s7">
+    <header>
+      <div class="n">7</div>
+      <div><h3>Ask the IMU which way is down</h3><p class="meta">45 min &middot; first real sensor data</p></div>
+    </header>
+    <div class="body">
+      <p>Wire the IMU per the <a href="#pins">pin table</a> &mdash; four wires: 3.3&nbsp;V (<strong>not</strong> 5&nbsp;V), ground, SDA to pin&nbsp;18, SCL to pin&nbsp;19.</p>
+      <p>Then download dRehmFlight &mdash; the flight firmware this build uses &mdash; open it in the Arduino IDE, and work through the <a href="#firmware">settings list</a>. Upload, open the serial monitor, and print the raw sensor values.</p>
+      <p>Lie the board flat. You should see roughly <strong>1&nbsp;g on the Z axis</strong> (that's gravity, pulling down through the sensor) and close to zero on X and Y.</p>
+      <p>Now tilt it and watch the numbers move. Do this deliberately for every axis and write down which direction makes each number go positive. You are checking that the sensor's idea of "left" matches the frame's idea of "left".</p>
+      <div class="box trick">
+        <b class="lbl">Tip</b>
+        <p>Getting an axis sign backwards is the single most common cause of a quad that flips instantly on takeoff. It costs nothing to check now, on a bench, with props in a drawer. It costs a frame to discover later.</p>
+      </div>
+      <div class="box deep">
+        <b class="lbl">Going deeper</b>
+        <p>An accelerometer measures acceleration, and gravity is indistinguishable from acceleration &mdash; which is why it reads 1&nbsp;g sitting still. That's not a quirk, it's Einstein's equivalence principle showing up in a $4 part. The gyro measures rotation rate instead, and the firmware blends both: the gyro is fast but drifts, the accelerometer is slow but always knows where down is. The blending algorithm is called a Madgwick filter, published by a PhD student in 2010, and it's now inside almost every drone on Earth.</p>
+      </div>
+      <div class="photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L17 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
+        <b>Photo 06</b>
+        <span>Your serial monitor showing live IMU values, with the board flat. Screenshot is fine.</span>
+        <em>step-07-imu-reading.jpg</em>
+      </div>
+    </div>
+    <div class="done"><b>You're done when</b><p>Z reads about 1&nbsp;g flat, tilting changes the right numbers, and you've written down every axis direction.</p></div>
+  </div>
+
+  <!-- STEP 8 -->
+  <div class="step" id="s8">
+    <header>
+      <div class="n">8</div>
+      <div><h3>Check how fast the loop actually runs</h3><p class="meta">20 min &middot; measure, don't assume</p></div>
+    </header>
+    <div class="body">
+      <p>Print how long each pass through the control loop takes. You're aiming for around 2,000 per second, meaning each lap takes about 500&nbsp;microseconds.</p>
+      <p>Here's the part that matters: <strong>log the worst lap, not the average.</strong> A loop that averages 2&nbsp;kHz but occasionally stalls for 8&nbsp;milliseconds is a failing result, and an average will cheerfully hide that from you.</p>
+      <div class="box nugget">
+        <b class="lbl">Nugget</b>
+        <p>This build uses a Teensy specifically because it has no operating system. On a chip running an OS, something else can interrupt your control loop at an unpredictable moment and stretch a motor pulse. Here, nothing can. "Boring and predictable" is the highest compliment you can pay a flight controller.</p>
+      </div>
+    </div>
+    <div class="done"><b>You're done when</b><p>Worst-case lap time is consistently under about 600&nbsp;&micro;s across a minute of running.</p></div>
+  </div>
+
+  <!-- STEP 9 -->
+  <div class="step" id="s9">
+    <header>
+      <div class="n">9</div>
+      <div><h3>Connect the radio</h3><p class="meta">1 hour &middot; expect to fiddle</p></div>
+    </header>
+    <div class="body">
+      <p>Fit the ELRS module to your transmitter, bind the receiver, and set the receiver's output mode to <strong>SBUS</strong> rather than CRSF. Then wire it up: three wires, per the <a href="#pins">pin table</a> &mdash; 5&nbsp;V (red), ground (black), and the SBUS output to <strong>pin&nbsp;7</strong> (yellow).</p>
+      <p>Print the channel values and move every stick and switch. All of them, one at a time, writing down which channel each one moves.</p>
+      <div class="box warn">
+        <b class="lbl">Watch out</b>
+        <p>If you see <em>nothing at all</em> &mdash; not garbage, just nothing &mdash; suspect <strong>signal inversion</strong> before you suspect your code. SBUS is normally an upside-down signal, and ELRS receivers can be configured either way. A perfectly valid signal the wrong way up looks exactly like no signal. Check that setting before you spend an evening reading the parser.</p>
+      </div>
+      <p>Now the safety-critical half: turn the transmitter <em>off</em> and confirm the flight controller notices within about half a second. It must decide "the link is gone", not quietly keep using the last values it received.</p>
+      <div class="box deep">
+        <b class="lbl">Going deeper</b>
+        <p>ELRS is worth the money and it's worth knowing why. It's built on LoRa radio chips &mdash; the same long-range technology used for remote sensors &mdash; wrapped in years of engineering specifically for control: it hops between frequencies to dodge interference, changes its data rate automatically as range increases, and has a carefully tuned way of telling "weak signal" apart from "no signal". That last one is the hard part, and getting it wrong is how aircraft fly away.</p>
+      </div>
+      <div class="photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L17 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
+        <b>Photo 07</b>
+        <span>Receiver wired in, with channel values on screen responding to a stick.</span>
+        <em>step-09-radio-link.jpg</em>
+      </div>
+    </div>
+    <div class="done"><b>You're done when</b><p>Every stick and switch maps to a known channel, and switching the transmitter off triggers link-lost within 500&nbsp;ms.</p></div>
+  </div>
+
+  <!-- STEP 10 -->
+  <div class="step" id="s10">
+    <header>
+      <div class="n">10</div>
+      <div><h3>Spin one motor &mdash; props still in the drawer</h3><p class="meta">45 min &middot; first movement</p></div>
+    </header>
+    <div class="body">
+      <p>Bolt the frame down or clamp it. Connect <em>one</em> motor's signal wire. Power up, arm, and give the smallest amount of throttle.</p>
+      <p>Check it spins the correct direction for its position. Then stop, connect the next motor, and repeat. One at a time, four times.</p>
+      <div class="placard">
+        <b class="lbl">Props off. Actually off.</b>
+        <p>A mixer sign error with no props is a startled afternoon. The same mistake with props fitted is a trip to hospital. There is no version of this step that involves propellers.</p>
+      </div>
+      <div class="box trick">
+        <b class="lbl">Tip</b>
+        <p>Your ESCs almost certainly understand dRehmFlight's motor signal without any configuration &mdash; they auto-detect the format on power-up. If the motor plays its little startup beeps and then spins smoothly from idle, everything understood everything. If it beeps angrily and refuses, that's a signal problem, not a motor problem.</p>
+      </div>
+      <div class="photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L17 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
+        <b>Photo 08</b>
+        <span>The frame clamped down, bare motors, no props anywhere in shot. Prove it.</span>
+        <em>step-10-motor-test.jpg</em>
+      </div>
+    </div>
+    <div class="done"><b>You're done when</b><p>All four motors spin the right way, respond to throttle, and stop on command.</p></div>
+  </div>
+
+  <!-- STEP 11 -->
+  <div class="step" id="s11">
+    <header>
+      <div class="n">11</div>
+      <div><h3>Teach it when it's allowed to be dangerous</h3><p class="meta">45 min &middot; the arming logic</p></div>
+    </header>
+    <div class="body">
+      <p>"Armed" means the motors are allowed to spin. "Disarmed" means they absolutely are not, no matter what any other part of the code thinks. Getting this right is the difference between a hobby and an injury.</p>
+
+      <figure>
+        <div class="figbox">
+          <svg viewBox="0 0 780 340" role="img" aria-label="States: boot leads to safe, safe leads to armed only when five conditions are true, armed drops to failsafe on any fault, and failsafe returns only to safe, never directly to armed.">
+            <defs>
+              <marker id="sa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+              <marker id="sg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--pass)"/></marker>
+              <marker id="sr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--danger)"/></marker>
+            </defs>
+
+            <rect x="18" y="136" width="88" height="52" rx="6" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <text x="62" y="167" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="15" font-weight="700" fill="currentColor">BOOT</text>
+
+            <rect x="200" y="126" width="146" height="72" rx="6" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="2.2"/>
+            <text x="273" y="158" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="19" font-weight="800" fill="currentColor">SAFE</text>
+            <text x="273" y="180" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">motors cannot spin</text>
+
+            <rect x="470" y="126" width="146" height="72" rx="6" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2.2"/>
+            <text x="543" y="158" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="19" font-weight="800" fill="currentColor">ARMED</text>
+            <text x="543" y="180" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">buzzer on, be careful</text>
+
+            <rect x="470" y="264" width="146" height="60" rx="6" fill="none" stroke="var(--danger)" stroke-width="2.2"/>
+            <text x="543" y="291" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="16" font-weight="800" fill="var(--danger)">FAILSAFE</text>
+            <text x="543" y="311" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--ink-2)">throttle cut</text>
+
+            <line x1="106" y1="162" x2="194" y2="162" stroke="currentColor" stroke-width="1.8" marker-end="url(#sa)"/>
+            <text x="150" y="152" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor">always</text>
+
+            <path d="M346 148 L464 148" fill="none" stroke="var(--pass)" stroke-width="2.2" marker-end="url(#sg)"/>
+            <text x="405" y="118" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--pass)">arm switch flipped</text>
+            <text x="405" y="103" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--pass)">AND throttle at zero</text>
+            <text x="405" y="88" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--pass)">AND IMU healthy</text>
+            <text x="405" y="73" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--pass)">AND battery ok</text>
+            <text x="405" y="58" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--pass)">AND radio link fresh</text>
+
+            <path d="M464 182 L346 182" fill="none" stroke="currentColor" stroke-width="1.8" marker-end="url(#sa)"/>
+            <text x="405" y="200" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="currentColor">arm switch off</text>
+
+            <path d="M543 198 L543 258" fill="none" stroke="var(--danger)" stroke-width="2.2" marker-end="url(#sr)"/>
+            <text x="558" y="222" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--danger)">radio lost, or IMU fault,</text>
+            <text x="558" y="238" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--danger)">or battery low, or hang</text>
+
+            <path d="M470 296 L273 296 L273 204" fill="none" stroke="currentColor" stroke-width="1.8" marker-end="url(#sa)"/>
+            <text x="372" y="316" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="currentColor">only after you disarm and drop throttle</text>
+
+            <path d="M626 274 C 694 260 694 196 630 178" fill="none" stroke="var(--danger)" stroke-width="1.8" stroke-dasharray="5 4"/>
+            <line x1="644" y1="200" x2="684" y2="250" stroke="var(--danger)" stroke-width="3"/>
+            <line x1="684" y1="200" x2="644" y2="250" stroke="var(--danger)" stroke-width="3"/>
+            <text x="700" y="220" font-family="Bricolage Grotesque, sans-serif" font-size="14" font-weight="800" fill="var(--danger)">NEVER</text>
+            <text x="700" y="238" font-family="Source Sans 3, sans-serif" font-size="11.5" fill="var(--ink-2)">no auto re-arm</text>
+          </svg>
+        </div>
+        <figcaption><b>The most important arrow in this diagram is the one that isn't there.</b> If the radio link comes back after dropping out, the aircraft must <em>not</em> put itself back under power on its own. Recovery goes through SAFE and needs a deliberate action from you. Notice too that arming needs five things to be true at once &mdash; a switch on its own would eventually arm an aircraft that should have stayed on the ground.</figcaption>
+      </figure>
+
+      <p>Test every transition, including the ones that must be <em>refused</em>: try arming with the throttle up, try arming with the transmitter off, and confirm it won't.</p>
+    </div>
+    <div class="done"><b>You're done when</b><p>You cannot arm with throttle up, cannot arm on a dead link, and never auto-rearm after a failsafe.</p></div>
+  </div>
+
+  <!-- STEP 12 -->
+  <div class="step" id="s12">
+    <header>
+      <div class="n">12</div>
+      <div><h3>The safety gauntlet</h3><p class="meta">1 hour &middot; the gate before flight</p></div>
+    </header>
+    <div class="body">
+      <p>Five tests. Perform each one for real and write down what happened. This is not a formality &mdash; it's the last point at which a mistake is cheap.</p>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Test</th><th>How</th><th>Must do</th></tr></thead>
+          <tbody>
+            <tr><td><b>Radio lost</b></td><td>Switch the transmitter off mid-throttle</td><td>Motors cut. Never hold the last throttle value.</td></tr>
+            <tr><td><b>Won't arm badly</b></td><td>Boot with throttle high</td><td>Refuse to arm, and say so with the buzzer.</td></tr>
+            <tr><td><b>Watchdog</b></td><td>Add a debug command that hangs the code on purpose</td><td>The chip resets and motors stop, rather than freezing at the last throttle.</td></tr>
+            <tr><td><b>Sensor fault</b></td><td>Unplug the IMU while running</td><td>Detect it and failsafe, rather than flying on garbage numbers.</td></tr>
+            <tr><td><b>Battery low</b></td><td>Run the pack down, or fake a low reading</td><td>Clean cutoff with warning, verified all the way <em>through</em> a reset.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="box deep">
+        <b class="lbl">Going deeper</b>
+        <p>Your real last line of defence isn't on the flight controller at all. If the Teensy dies completely, the ESCs still have power &mdash; they don't stop just because the brain stopped. What saves you is that the <em>signal</em> stops arriving, and the ESCs cut their motors after their own built-in timeout. Test that too: arm on the bench, pull the signal wire, and time how long the motor keeps turning. Write the number down. It's a real property of your aircraft.</p>
+      </div>
+      <div class="placard">
+        <b class="lbl">This is a gate, not a checklist</b>
+        <p>If any one of these five has not been demonstrated with your own eyes, step 13 does not happen today. It doesn't matter how well everything else went.</p>
+      </div>
+    </div>
+    <div class="done"><b>You're done when</b><p>All five tests performed and their results written in your build log below.</p></div>
+  </div>
+
+  <!-- STEP 13 -->
+  <div class="step" id="s13">
+    <header>
+      <div class="n">13</div>
+      <div><h3>Props on. Tethered hover.</h3><p class="meta">30 min &middot; outdoors, adult present</p></div>
+    </header>
+    <div class="body">
+      <p>Outside, on grass, away from people and pets. Tether the aircraft with fishing line to something heavy so it can rise a few inches and no further. Fit the props now &mdash; checking each one is the right rotation for its motor.</p>
+      <p>Stand back. Arm. Raise throttle slowly until it gets light on its feet, and watch which way it wants to lean.</p>
+      <div class="box trick">
+        <b class="lbl">Tip</b>
+        <p>Keep your thumb on the disarm switch the entire time. Not near it &mdash; on it. If anything looks wrong, disarm first and ask questions afterwards. Nothing is diagnosed better while it's spinning.</p>
+      </div>
+      <p>If it leans consistently one way, that's usually an axis sign or a motor order problem &mdash; go back to steps 7 and 10 rather than trying to tune it out.</p>
+      <div class="photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L17 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
+        <b>Photo 09</b>
+        <span>The aircraft tethered and light on its feet. First time your own flight controller held something up.</span>
+        <em>step-13-tethered-hover.jpg</em>
+      </div>
+    </div>
+    <div class="done"><b>You're done when</b><p>It lifts, holds roughly level without violent oscillation, and disarms instantly when told.</p></div>
+  </div>
+
+  <!-- STEP 14 -->
+  <div class="step" id="s14">
+    <header>
+      <div class="n">14</div>
+      <div><h3>Untether it, and tune</h3><p class="meta">Ongoing &middot; the fun part</p></div>
+    </header>
+    <div class="body">
+      <p>Free hover, low, over grass. Then start tuning &mdash; adjusting how hard the DECIDE box from Part 0 reacts. Change one number at a time and fly between changes.</p>
+      <div class="tw">
+        <table>
+          <thead><tr><th>What you feel</th><th>Usually means</th><th>Try</th></tr></thead>
+          <tbody>
+            <tr><td>Slow, mushy, drifts away from you</td><td>Not reacting hard enough</td><td>Increase P a little</td></tr>
+            <tr><td>Fast shaking, buzzing sound</td><td>Reacting too hard, or vibration</td><td>Decrease P; check the foam mount</td></tr>
+            <tr><td>Slow wallowing back and forth</td><td>Overcorrecting slowly</td><td>Decrease I</td></tr>
+            <tr><td>Drifts steadily one direction</td><td>Not correcting for a constant offset</td><td>Increase I slightly</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="box nugget">
+        <b class="lbl">Nugget</b>
+        <p>Tuning feels like magic until you realise you're doing the same thing your inner ear does when you stand on one leg &mdash; sensing the wobble, guessing how hard to push back, and learning the right amount by trial. You are literally teaching a machine to balance. Enjoy this part, it's the best bit.</p>
+      </div>
+      <div class="photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L17 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
+        <b>Photo 10</b>
+        <span>Free flight. The one you show people.</span>
+        <em>step-14-first-flight.jpg</em>
+      </div>
+    </div>
+    <div class="done"><b>You're done when</b><p>It hovers hands-off for ten seconds without wandering. You built that.</p></div>
+  </div>
+</section>
+
+<!-- ================= PART 4 : FLY ================= -->
+<section class="part" id="preflight">
+  <div class="parthead">
+    <p class="pn">Part 4</p>
+    <h2>Flying it well</h2>
+    <p>The build is done. This part is about the habits that keep it in one piece and the process that makes it fly beautifully instead of merely adequately.</p>
+  </div>
+
+  <h3>The pre-flight ritual</h3>
+  <p>Do this every single time, in this order, even when you're certain nothing has changed. Especially then &mdash; complacency is what breaks aircraft that have flown fine for months.</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th class="nw">#</th><th>Check</th><th>Looking for</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">1</td><td>Props</td><td>Tight, undamaged, correct rotation for each position. Run a fingernail along each edge &mdash; a nick you can feel is a prop you replace.</td></tr>
+        <tr><td class="mono">2</td><td>Arms and screws</td><td>Nothing loose. Vibration undoes screws, and a loose motor mount reads as a tuning problem you'll chase for hours.</td></tr>
+        <tr><td class="mono">3</td><td>Battery</td><td>Charged, not puffy, strapped down firmly. A pack that shifts in flight moves the centre of gravity mid-air.</td></tr>
+        <tr><td class="mono">4</td><td>Wires</td><td>Nothing near a prop arc. Nothing chafing. Give the IMU wires a gentle tug to confirm they're still slack, not snagged tight.</td></tr>
+        <tr><td class="mono">5</td><td>Transmitter first</td><td>Always power the transmitter <em>before</em> the aircraft, and power the aircraft down <em>before</em> the transmitter. Every time.</td></tr>
+        <tr><td class="mono">6</td><td>Throttle at zero</td><td>Confirm before connecting the battery. Your arming logic should refuse anyway &mdash; this is the belt to that braces.</td></tr>
+        <tr><td class="mono">7</td><td>Arm test on the ground</td><td>Arm, listen for all four motors idling evenly, disarm. Uneven idle means something changed.</td></tr>
+        <tr><td class="mono">8</td><td>Surroundings</td><td>People, pets, cars, windows. Then decide where you'd rather it crashed, and stand so that's the direction away from you.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box trick">
+    <b class="lbl">Tip</b>
+    <p>"Transmitter on first, off last" isn't superstition. If the aircraft is powered with no transmitter present, it can see an unbound or spoofed signal at exactly the wrong moment. Powering down the aircraft while the transmitter is still on means it never spends a second armed and deaf.</p>
+  </div>
+
+  <h3 id="tuning">Tuning, properly</h3>
+  <p>Tuning means adjusting how hard the DECIDE box from Part 0 pushes back. Three numbers per axis, and there's a right order to approach them.</p>
+
+  <div class="cards">
+    <div class="mini" style="border-color:var(--blue)">
+      <h4 style="color:var(--blue)">P &mdash; Proportional</h4>
+      <p>"How far off am I <em>right now?</em>" The main muscle. Too little and it's mushy and slow; too much and it shakes. Tune this first, and tune it alone.</p>
+    </div>
+    <div class="mini" style="border-color:var(--blue)">
+      <h4 style="color:var(--blue)">I &mdash; Integral</h4>
+      <p>"How long have I been off?" Fixes steady drift &mdash; wind, a slightly heavy side. Too much causes slow wallowing. Tune second.</p>
+    </div>
+    <div class="mini" style="border-color:var(--blue)">
+      <h4 style="color:var(--blue)">D &mdash; Derivative</h4>
+      <p>"How fast is it getting worse?" Damping &mdash; it anticipates and smooths. Very sensitive to vibration, which is why the foam mount matters. Tune last, gently.</p>
+    </div>
+  </div>
+
+  <h4>The method</h4>
+  <ol>
+    <li><strong>Change one number, on one axis, at a time.</strong> Change two and you learn nothing from the result.</li>
+    <li><strong>Move in steps of about 20%.</strong> Small enough to be safe, big enough to feel.</li>
+    <li><strong>Fly the same test between changes</strong> &mdash; a hover, a sharp stick input, a stop. Same test every time or you're comparing nothing.</li>
+    <li><strong>Write down every value you try</strong> and how it felt, in the build log. Memory is unreliable and you will absolutely go in circles otherwise.</li>
+    <li><strong>Back off 10&ndash;15% from the point where it starts to shake.</strong> A tune that's perfect on a calm evening is marginal in wind or with a heavier battery. Leave margin.</li>
+  </ol>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>What you feel</th><th>Usually means</th><th>Try</th></tr></thead>
+      <tbody>
+        <tr><td><b>Slow, mushy, drifts away from you</b></td><td>Not reacting hard enough</td><td>Increase P</td></tr>
+        <tr><td><b>Fast buzzing, high-pitched shake</b></td><td>P too high, or vibration reaching the sensor</td><td>Lower P. Check the foam mount and prop balance first.</td></tr>
+        <tr><td><b>Slow wallowing back and forth</b></td><td>Overcorrecting slowly</td><td>Lower I</td></tr>
+        <tr><td><b>Drifts steadily in one direction</b></td><td>Not correcting a constant offset</td><td>Raise I slightly</td></tr>
+        <tr><td><b>Bounces after a sharp stop</b></td><td>Not enough damping</td><td>Raise D a little</td></tr>
+        <tr><td><b>Motors get hot, aircraft feels twitchy</b></td><td>D too high &mdash; it's amplifying sensor noise</td><td>Lower D. Hot motors on a well-tuned quad are a warning sign.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box warn">
+    <b class="lbl">Watch out</b>
+    <p>If you find yourself needing extreme values to make it fly, stop tuning. Something mechanical is wrong &mdash; an unbalanced prop, a loose arm, a stiff IMU mount, a bent motor shaft. Tuning cannot fix a physical problem; it can only hide it until the day it stops hiding.</p>
+  </div>
+
+  <div class="box nugget">
+    <b class="lbl">Nugget</b>
+    <p>The reason too much D makes motors hot is genuinely interesting: D reacts to <em>rate of change</em>, so it amplifies the highest-frequency thing it can see. On a vibrating aircraft that's the vibration itself, and the controller ends up frantically twitching the motors thousands of times a second chasing shakes that aren't real movement. All that energy comes out as heat. Hot motors after a gentle flight are the controller telling you it's fighting ghosts.</p>
+  </div>
+</section>
+
+<!-- ================= PART 5 : ESC ================= -->
+<section class="part" id="esc">
+  <div class="parthead">
+    <p class="pn">Part 5 &middot; advanced</p>
+    <h2>Building your own ESCs</h2>
+    <p>Optional, and genuinely harder than everything above. Do this only after the quad has flown for a while &mdash; but it's where the real power-electronics learning is.</p>
+  </div>
+
+  <h3>What an ESC actually does</h3>
+  <p>An <strong>Electronic Speed Controller</strong> sits between your battery and one motor. Your flight controller sends it a number meaning "spin this fast", and the ESC does the surprisingly hard work of making that happen.</p>
+
+  <p>Brushless motors have no brushes &mdash; no sliding contacts to switch the coils. So something else has to switch them, in the right order, at exactly the right moment, thousands of times a second. That something is the ESC.</p>
+
+  <div class="box nugget">
+    <b class="lbl">Nugget</b>
+    <p>Here's the clever part: the ESC has no sensor telling it where the rotor is. It works it out by <em>listening</em> to the coil it isn't currently driving. A spinning magnet induces a small voltage in that idle coil &mdash; "back-EMF" &mdash; and the moment that voltage crosses zero tells the ESC exactly where the rotor is. It's steering by the echo of its own motion, and it does this about ten thousand times a second.</p>
+  </div>
+
+  <h3>Why one per motor</h3>
+  <p>Most quads use a "4-in-1" board that runs all four motors. Building four separate ESCs instead means a failure takes out one motor's control rather than the whole power stage &mdash; and it means each board is small, simple, and independently testable. That's real redundancy, and it's the same "isolate the parts" thinking as the quiet side and loud side.</p>
+
+  <h3>The trap, and the way around it</h3>
+  <p>Here's the honest bit. The hard part of an ESC is <strong>not the circuit board</strong>. It's the firmware &mdash; the code that figures out rotor position from back-EMF, gets the timing right at every speed, starts a stopped motor smoothly, and recovers when it loses track. That's a bigger project than the entire flight controller you just built.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 840 340" role="img" aria-label="ESC block diagram: signal from the flight controller enters a microcontroller running AM32 firmware, which drives a gate driver, six MOSFETs, and the motor, with back-EMF sensing returning to the microcontroller.">
+        <defs>
+          <marker id="ea" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+          <marker id="eo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--power)"/></marker>
+        </defs>
+
+        <rect x="14" y="20" width="608" height="300" rx="8" fill="none" stroke="var(--signal)" stroke-width="2" stroke-dasharray="8 5"/>
+        <text x="30" y="44" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="1.2" fill="var(--signal)">THE BOARD YOU DESIGN</text>
+
+        <text x="30" y="120" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--signal)">signal from</text>
+        <text x="30" y="137" font-family="Source Sans 3, sans-serif" font-size="13" fill="var(--signal)">your Teensy</text>
+        <line x1="110" y1="128" x2="152" y2="128" stroke="var(--signal)" stroke-width="2.5" marker-end="url(#ea)"/>
+
+        <rect x="156" y="78" width="152" height="140" rx="7" fill="var(--card)" stroke="currentColor" stroke-width="2"/>
+        <text x="232" y="106" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="700" fill="currentColor">Small MCU</text>
+        <text x="232" y="126" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--ink-2)">a cheap ARM chip</text>
+        <rect x="170" y="138" width="124" height="66" rx="5" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="2"/>
+        <text x="232" y="160" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="15" font-weight="800" fill="var(--signal)">AM32</text>
+        <text x="232" y="178" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="11.5" fill="var(--ink-2)">free, open-source</text>
+        <text x="232" y="195" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="11.5" fill="var(--ink-2)">DON'T WRITE THIS</text>
+
+        <rect x="352" y="92" width="112" height="112" rx="7" fill="var(--card)" stroke="var(--power)" stroke-width="2"/>
+        <text x="408" y="134" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="15" font-weight="700" fill="currentColor">Gate driver</text>
+        <text x="408" y="155" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--ink-2)">turns tiny signals</text>
+        <text x="408" y="172" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--ink-2)">into big ones</text>
+        <line x1="308" y1="128" x2="348" y2="128" stroke="currentColor" stroke-width="2" marker-end="url(#ea)"/>
+
+        <rect x="504" y="66" width="106" height="164" rx="7" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2.5"/>
+        <text x="557" y="94" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="15" font-weight="800" fill="currentColor">6 MOSFETs</text>
+        <text x="557" y="113" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="11.5" fill="var(--ink-2)">the muscle</text>
+        <g stroke="var(--power)" stroke-width="1.4" fill="none">
+          <rect x="516" y="126" width="26" height="36" rx="3"/><rect x="546" y="126" width="26" height="36" rx="3"/><rect x="576" y="126" width="26" height="36" rx="3"/>
+          <rect x="516" y="172" width="26" height="36" rx="3"/><rect x="546" y="172" width="26" height="36" rx="3"/><rect x="576" y="172" width="26" height="36" rx="3"/>
+        </g>
+        <line x1="464" y1="148" x2="500" y2="148" stroke="var(--power)" stroke-width="2.5" marker-end="url(#eo)"/>
+
+        <circle cx="720" cy="148" r="48" fill="none" stroke="var(--power)" stroke-width="2.5"/>
+        <text x="720" y="144" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="16" font-weight="700" fill="currentColor">Motor</text>
+        <text x="720" y="163" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--ink-2)">bought, not built</text>
+        <line x1="610" y1="148" x2="668" y2="148" stroke="var(--power)" stroke-width="5" marker-end="url(#eo)"/>
+
+        <path d="M557 234 L557 274 L232 274 L232 222" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ea)"/>
+        <text x="394" y="296" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="currentColor">back-EMF listening line &mdash; "where is the rotor now?"</text>
+      </svg>
+    </div>
+    <figcaption><b>Everything outside the small teal box is worth building yourself</b> &mdash; choosing MOSFETs, designing gate drive, managing heat, laying out the board. That's real, transferable power-electronics engineering. The block inside it is a solved problem that free software already does better than you will on a first attempt. <b>Pick a microcontroller that AM32 already supports, and your board runs working firmware the day you finish soldering it.</b></figcaption>
+  </figure>
+
+  <h3>Design targets</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Thing</th><th class="nw">Target</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Battery voltage</td><td class="mono nw">4S, 16.8 V max</td><td>Choose MOSFETs rated at least 30&nbsp;V &mdash; switching creates voltage spikes above the battery voltage.</td></tr>
+        <tr><td>Current</td><td class="mono nw">20&ndash;30 A each</td><td>Peaks go well above this. Size the copper and the cooling for the peak, not the average.</td></tr>
+        <tr><td>Microcontroller</td><td class="mono nw">AM32-supported</td><td>Check the project's current list <em>before</em> ordering anything. This single constraint shapes the whole schematic.</td></tr>
+        <tr><td>Gate driver</td><td class="mono nw">integrated 3-phase</td><td>Far less painful than building gate drive from discrete parts on a first board.</td></tr>
+        <tr><td>Input signal</td><td class="mono nw">DShot600</td><td>Digital and error-checked. Note this needs work on the Teensy side &mdash; see below.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box warn">
+    <b class="lbl">Watch out &mdash; the hidden dependency</b>
+    <p>AM32 wants DShot, and dRehmFlight doesn't send DShot &mdash; it sends OneShot125. So building your own ESCs quietly adds a firmware job on the flight controller too. It's a bounded piece of work, but plan it <em>with</em> the ESC boards rather than discovering it the week they arrive.</p>
+  </div>
+
+  <div class="box trick">
+    <b class="lbl">Tip</b>
+    <p>Build one ESC first, not four. Test it on a motor bolted to a heavy bench with no prop. Only when one works completely do you build the other three &mdash; otherwise you've made four copies of the same mistake.</p>
+  </div>
+</section>
+
+<!-- ================= PART 3 ================= -->
+<section class="part" id="p4">
+  <div class="parthead">
+    <p class="pn">Part 6 &middot; roadmap, not yet flown</p>
+    <h2>Where this goes next: VTOL</h2>
+    <p>Everything above has been written to be built from. This part has <strong>not been built or flown</strong> &mdash; it's the plan, included so you can see where the project heads. Read it, don't solder from it.</p>
+  </div>
+
+  <div class="placard">
+    <b class="lbl">Do not build from this section yet</b>
+    <p>The steps in Part 3 are ordered, tested and verifiable. What follows is design thinking, not verified procedure. A transitioning aircraft fails in far more interesting ways than a quadcopter does, and it fails at altitude and speed. Fly the quad for a long time first.</p>
+  </div>
+
+  <h3>What a VTOL is, and why bother</h3>
+  <p>A <strong>VTOL</strong> &mdash; Vertical Take-Off and Landing &mdash; lifts off straight up like a quadcopter, then tilts over and flies forward like an aeroplane, letting a wing hold it up instead of its motors.</p>
+
+  <p>The reason to want one is efficiency. A quadcopter in forward flight is a brick being shoved through the air by brute force, burning battery purely to stay airborne. A wing does the same job using a fraction of the power, because it converts forward motion into lift almost for free.</p>
+
+  <div class="box nugget">
+    <b class="lbl">Nugget</b>
+    <p>A typical quad gets maybe 10&ndash;20 minutes of flight. A comparable winged aircraft carrying the same battery can stay up for an hour or more and cover many times the distance. That gap is the entire reason VTOL designs exist, and it's why they're used for surveying, search, and delivery &mdash; anywhere you need to take off in a small space but then actually go somewhere.</p>
+  </div>
+
+  <h3>Three ways to build one</h3>
+  <p>They differ in what physically moves, and that choice drives everything else &mdash; complexity, weight, and how badly it goes wrong when something fails.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 880 330" role="img" aria-label="Three VTOL layouts compared: a tailsitter that pivots its whole body, a tiltrotor whose motors rotate, and a quadplane with separate lift and cruise motors.">
+        <!-- TAILSITTER -->
+        <text x="146" y="30" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="800" fill="currentColor">TAILSITTER</text>
+        <text x="146" y="50" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">the whole aircraft pivots</text>
+        <g stroke="currentColor" stroke-width="2" fill="none">
+          <path d="M112 84 L112 168"/><path d="M180 84 L180 168"/>
+          <path d="M92 96 L200 96"/>
+        </g>
+        <circle cx="112" cy="80" r="10" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <circle cx="180" cy="80" r="10" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <path d="M96 176 L196 176" stroke="var(--ink-3)" stroke-width="2" stroke-dasharray="4 4"/>
+        <text x="146" y="196" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">sits on its tail</text>
+        <text x="146" y="228" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" font-weight="600" fill="var(--pass)">Simplest mechanically</text>
+        <text x="146" y="246" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--ink-2)">no moving mounts at all</text>
+        <text x="146" y="272" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" font-weight="600" fill="var(--danger)">Hardest to control</text>
+        <text x="146" y="290" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--ink-2)">and hardest to fly &mdash; your</text>
+        <text x="146" y="306" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--ink-2)">sense of "up" keeps changing</text>
+
+        <line x1="292" y1="20" x2="292" y2="310" stroke="var(--rule)" stroke-width="1"/>
+
+        <!-- TILTROTOR -->
+        <text x="440" y="30" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="800" fill="currentColor">TILTROTOR</text>
+        <text x="440" y="50" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">the motors rotate</text>
+        <path d="M356 130 L524 130" stroke="currentColor" stroke-width="3" fill="none"/>
+        <path d="M430 112 L430 176" stroke="currentColor" stroke-width="2" fill="none"/>
+        <circle cx="372" cy="130" r="11" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <circle cx="508" cy="130" r="11" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <path d="M372 106 A 24 24 0 0 1 396 130" stroke="var(--blue)" stroke-width="2" fill="none"/>
+        <path d="M508 106 A 24 24 0 0 0 484 130" stroke="var(--blue)" stroke-width="2" fill="none"/>
+        <text x="440" y="196" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--blue)">motors swing 90&deg;</text>
+        <text x="440" y="228" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" font-weight="600" fill="var(--pass)">Most efficient</text>
+        <text x="440" y="246" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--ink-2)">every motor works in both modes</text>
+        <text x="440" y="272" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" font-weight="600" fill="var(--danger)">Mechanically fragile</text>
+        <text x="440" y="290" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--ink-2)">a tilt mechanism that jams</text>
+        <text x="440" y="306" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--ink-2)">mid-transition ends the flight</text>
+
+        <line x1="588" y1="20" x2="588" y2="310" stroke="var(--rule)" stroke-width="1"/>
+
+        <!-- QUADPLANE -->
+        <text x="734" y="30" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="17" font-weight="800" fill="currentColor">QUADPLANE</text>
+        <text x="734" y="50" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">nothing moves at all</text>
+        <path d="M652 130 L816 130" stroke="currentColor" stroke-width="3" fill="none"/>
+        <path d="M734 108 L734 178" stroke="currentColor" stroke-width="2" fill="none"/>
+        <circle cx="676" cy="110" r="9" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="2"/>
+        <circle cx="676" cy="152" r="9" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="2"/>
+        <circle cx="792" cy="110" r="9" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="2"/>
+        <circle cx="792" cy="152" r="9" fill="var(--signal-soft)" stroke="var(--signal)" stroke-width="2"/>
+        <circle cx="734" cy="186" r="10" fill="var(--power-soft)" stroke="var(--power)" stroke-width="2"/>
+        <text x="734" y="212" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--signal)">4 lift + 1 push</text>
+        <text x="734" y="238" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" font-weight="600" fill="var(--pass)">Safest to develop</text>
+        <text x="734" y="256" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--ink-2)">hover and cruise are almost</text>
+        <text x="734" y="272" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--ink-2)">two independent aircraft</text>
+        <text x="734" y="296" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" font-weight="600" fill="var(--tip)">Heaviest &mdash; lift motors</text>
+        <text x="734" y="312" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--ink-2)">are dead weight in cruise</text>
+      </svg>
+    </div>
+    <figcaption><b>For a first VTOL, the quadplane is the right answer</b> even though it's the least elegant. Its virtue is that if the transition goes wrong, the lift motors are still bolted on and still work &mdash; you spin them back up and you're a quadcopter again. On a tiltrotor or tailsitter, a bad transition has no such escape hatch. Elegance is worth less than a way out.</figcaption>
+  </figure>
+
+  <h3>The transition is the whole problem</h3>
+  <p>Hovering is solved &mdash; you solved it in Part 3. Winged flight has been solved since 1903. The dangerous part is the ten seconds in between, when the aircraft is too fast to hover comfortably and too slow for the wing to carry it.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 300" role="img" aria-label="Transition timeline: as airspeed rises, lift hands over from the rotors to the wing, with a danger zone in the middle where neither is fully doing the job.">
+        <line x1="60" y1="230" x2="770" y2="230" stroke="currentColor" stroke-width="2"/>
+        <text x="60" y="258" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink-3)">0 mph</text>
+        <text x="415" y="258" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink-3)">airspeed increasing &rarr;</text>
+        <text x="770" y="258" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink-3)">cruise speed</text>
+
+        <rect x="330" y="42" width="176" height="188" fill="var(--danger-soft)" stroke="var(--danger)" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="418" y="66" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="14" font-weight="800" fill="var(--danger)">THE GAP</text>
+        <text x="418" y="84" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="11.5" fill="var(--ink-2)">rotors losing grip,</text>
+        <text x="418" y="100" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="11.5" fill="var(--ink-2)">wing not yet flying</text>
+
+        <path d="M60 80 C 200 84 300 110 418 160 C 520 202 660 222 770 226" fill="none" stroke="var(--power)" stroke-width="3"/>
+        <text x="72" y="70" font-family="Source Sans 3, sans-serif" font-size="13" font-weight="600" fill="var(--power)">lift from rotors</text>
+
+        <path d="M60 226 C 200 224 300 206 418 160 C 520 118 660 86 770 80" fill="none" stroke="var(--signal)" stroke-width="3"/>
+        <text x="770" y="70" text-anchor="end" font-family="Source Sans 3, sans-serif" font-size="13" font-weight="600" fill="var(--signal)">lift from the wing</text>
+
+        <circle cx="418" cy="160" r="6" fill="var(--danger)"/>
+        <text x="418" y="192" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="var(--danger)">handover point</text>
+
+        <text x="60" y="286" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">hovering</text>
+        <text x="418" y="286" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">transitioning &mdash; commit or abort, don't dawdle</text>
+        <text x="770" y="286" text-anchor="end" font-family="Source Sans 3, sans-serif" font-size="12.5" fill="var(--ink-2)">flying</text>
+      </svg>
+    </div>
+    <figcaption><b>The two curves have to add up to the aircraft's weight at every moment.</b> Where they cross, neither system is doing much on its own &mdash; that's why transitions are done briskly and decisively rather than gently. Lingering in the middle is what drops aircraft out of the sky, and it's why a quadplane's ability to simply abort back to hover matters so much.</figcaption>
+  </figure>
+
+  <h3>What actually changes</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Area</th><th>What's new</th><th>How hard</th></tr></thead>
+      <tbody>
+        <tr><td><b>Airframe</b></td><td>A wing, a fuselage, control surfaces, and a way to mount lift motors that survives the loads.</td><td><span class="tag a">Real work</span> This becomes a model-aircraft build as much as an electronics one.</td></tr>
+        <tr><td><b>Servos</b></td><td>Ailerons and elevator need servos, driven from spare Teensy pins.</td><td><span class="tag g">Already supported</span> dRehmFlight handles servo outputs natively &mdash; one of the reasons it was chosen.</td></tr>
+        <tr><td><b>Airspeed sensor</b></td><td>A pitot tube, so the aircraft knows whether the wing is actually flying rather than guessing from throttle.</td><td><span class="tag a">New sensor</span> Not optional. Transitioning blind is how you find the gap the hard way.</td></tr>
+        <tr><td><b>Mixing</b></td><td>Two different sets of rules for how sticks map to outputs, plus a schedule for blending between them.</td><td><span class="tag r">The hard part</span> This is where the design effort actually goes.</td></tr>
+        <tr><td><b>Failsafe</b></td><td>"Cut the motors" is right in a hover and catastrophically wrong in cruise, where you'd rather glide.</td><td><span class="tag r">Rethink from scratch</span> Answer this on paper before any hardware exists.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box deep">
+    <b class="lbl">Going deeper</b>
+    <p>Notice that the failsafe question genuinely reverses. Everything in Part 3 said "cut the motors, never hold last command" &mdash; correct for a quad, where a dead-stick aircraft simply drops a few feet onto grass. A winged aircraft at cruise altitude with its motors cut is a glider, and a glider with sensible control surfaces can be brought down far more safely than one that's had its brain switched off. The right answer changes with the airframe, which is exactly why this needs designing rather than copying.</p>
+  </div>
+
+  <h3>Why the quad had to come first</h3>
+  <p>Every hour the quad flies is an hour of proof that your soldering, your grounding, your sensor mount, your radio link and your arming logic all work. When the airframe finally changes, that's the <em>only</em> thing that's new &mdash; and debugging one new thing is a job, while debugging six at once is a hobby you quit.</p>
+
+  <div class="box trick">
+    <b class="lbl">Tip</b>
+    <p>When you get here, build the wing as a plain radio-controlled aeroplane <em>first</em> &mdash; no lift motors, no transition, just a wing you can hand-launch and fly. Learn how it behaves. Then add the hover system to an airframe you already trust. Same principle as everything else in this guide: one new thing at a time.</p>
+  </div>
+</section>
+
+<!-- ================= TROUBLESHOOTING ================= -->
+<section class="part" id="trouble">
+  <div class="parthead">
+    <p class="pn">When it goes wrong</p>
+    <h2>Troubleshooting</h2>
+    <p>Organised by what you're seeing, because that's the side you're standing on.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Symptom</th><th>Most likely</th><th>Do this</th></tr></thead>
+      <tbody>
+        <tr><td><b>Nothing at all from the receiver</b></td><td>SBUS inversion mismatch</td><td>Flip the inversion setting on the receiver. Genuinely check this before reading any code.</td></tr>
+        <tr><td><b>Flips over instantly on takeoff</b></td><td>Axis sign or motor order wrong</td><td>Back to step 7 and step 10. Do not attempt to tune this away.</td></tr>
+        <tr><td><b>Fast buzzing shake in hover</b></td><td>Vibration reaching the IMU, or P too high</td><td>Check for slack in the IMU wires first, then balance props, then lower P.</td></tr>
+        <tr><td><b>Wobbles worse at high throttle</b></td><td>Grounding &mdash; motor noise on the sensor</td><td>Step 5. Look for any ground wire that doesn't go straight to the dot.</td></tr>
+        <tr><td><b>Motor beeps angrily, won't spin</b></td><td>ESC isn't getting a signal it likes</td><td>Signal wire, ground return, and whether the ESC actually has power.</td></tr>
+        <tr><td><b>Teensy won't upload</b></td><td>Cable is charge-only, or bootloader needs the button</td><td>Swap to a known data cable, then press the button on the board during upload.</td></tr>
+        <tr><td><b>Board dead after wiring something</b></td><td>5&nbsp;V on a 3.3&nbsp;V pin</td><td>This is why we meter first. Sockets mean it's a two-minute swap, not a rebuild.</td></tr>
+        <tr><td><b>Drifts one direction in hover</b></td><td>IMU not level, or trim</td><td>Re-level the board, redo the sensor calibration on a flat surface.</td></tr>
+        <tr><td><b>One motor runs hotter than the rest</b></td><td>Bent shaft, damaged prop, or a mount that isn't square</td><td>Spin it by hand and watch for wobble. A motor working harder than its siblings is being asked to fight the airframe.</td></tr>
+        <tr><td><b>Works on USB, dies on battery</b></td><td>Buck output wrong, or a ground that only completes through the USB cable</td><td>Meter the 5&nbsp;V rail while on battery. This one is almost always a missing ground.</td></tr>
+        <tr><td><b>Random resets mid-throttle</b></td><td>Voltage sag browning out the Teensy</td><td>Add bulk capacitance at the buck, check pack health, and confirm the FC has its own feed rather than sharing an ESC's.</td></tr>
+        <tr><td><b>Arms sometimes, refuses others</b></td><td>One of the five arming conditions is marginal</td><td>Print which condition failed. Guessing here wastes evenings; the firmware knows and will tell you if you ask.</td></tr>
+        <tr><td><b>Everything fine, then wild flip on takeoff</b></td><td>Prop fitted to the wrong motor</td><td>Check rotation direction against the diagram in Part 0. This is the single most common first-flight crash.</td></tr>
+        <tr><td><b>Serial monitor prints nonsense</b></td><td>Baud rate mismatch</td><td>Match the monitor's baud to what the sketch sets. Garbage characters mean it's connected but misreading &mdash; which is good news.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================= GLOSSARY ================= -->
+<section class="part" id="glossary">
+  <div class="parthead">
+    <p class="pn">Reference</p>
+    <h2>Glossary</h2>
+    <p>Every bit of jargon in this guide, in plain words. Skim it now, come back when something reads like nonsense.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th class="nw">Word</th><th>What it means</th></tr></thead>
+      <tbody>
+        <tr><td><b>Arm / disarm</b></td><td>Whether the motors are allowed to spin at all. Disarmed means they cannot, no matter what any other part of the code wants.</td></tr>
+        <tr><td><b>Back-EMF</b></td><td>The small voltage a spinning motor generates in its own coils. ESCs listen to it to work out where the rotor is without needing a sensor.</td></tr>
+        <tr><td><b>BEC</b></td><td>A small voltage regulator built into some ESCs, giving 5&nbsp;V for the flight controller. This build deliberately uses its own instead.</td></tr>
+        <tr><td><b>Brushless motor</b></td><td>A motor with no sliding electrical contacts. More efficient and longer-lived than brushed, but it needs an ESC to switch its coils.</td></tr>
+        <tr><td><b>Control loop</b></td><td>The repeating sense&rarr;compare&rarr;decide&rarr;act cycle. Runs about 2,000 times a second.</td></tr>
+        <tr><td><b>CRSF</b></td><td>The native language ExpressLRS receivers speak. Richer than SBUS &mdash; it carries information both ways &mdash; but this build uses SBUS first for simplicity.</td></tr>
+        <tr><td><b>ESC</b></td><td>Electronic Speed Controller. Converts "spin this fast" into the right switching pattern for a brushless motor.</td></tr>
+        <tr><td><b>Failsafe</b></td><td>What the aircraft does when something goes wrong &mdash; usually cutting the motors. The most important code you'll never want to see run.</td></tr>
+        <tr><td><b>Gyro</b></td><td>Measures how fast something is rotating. In your IMU it's a vibrating microscopic silicon structure, not a spinning wheel.</td></tr>
+        <tr><td><b>IMU</b></td><td>Inertial Measurement Unit. The chip containing the gyro and accelerometer &mdash; the aircraft's sense of balance.</td></tr>
+        <tr><td><b>LiPo</b></td><td>Lithium Polymer battery. Enormous power for its weight, and genuinely dangerous if damaged, overcharged, or shorted.</td></tr>
+        <tr><td><b>Mixer</b></td><td>The bit of code that turns "roll left" into four specific motor speeds.</td></tr>
+        <tr><td><b>OneShot125</b></td><td>The format your flight controller uses to tell the ESCs how fast to spin. Faster than the old servo-style signal it replaced.</td></tr>
+        <tr><td><b>Perfboard</b></td><td>A blank circuit board covered in a grid of holes, for building one-off circuits by hand.</td></tr>
+        <tr><td><b>PID</b></td><td>Proportional, Integral, Derivative &mdash; the three-part maths that decides how hard to push back against an error.</td></tr>
+        <tr><td><b>Pitot tube</b></td><td>A small forward-facing tube that measures airspeed from air pressure. Needed for VTOL, not for a quad.</td></tr>
+        <tr><td><b>Pull-up resistor</b></td><td>A resistor that gently holds a signal wire high when nothing else is driving it. I&sup2;C connections need them.</td></tr>
+        <tr><td><b>SBUS</b></td><td>A way of sending all radio channels down one wire as digital data. Normally an upside-down signal, which is why inversion matters.</td></tr>
+        <tr><td><b>4S</b></td><td>A battery with four cells in series &mdash; about 14.8&nbsp;V normally, 16.8&nbsp;V fully charged.</td></tr>
+        <tr><td><b>Star ground</b></td><td>Wiring every ground connection back to one single physical point instead of chaining them. The most important habit in this build.</td></tr>
+        <tr><td><b>Watchdog</b></td><td>A hardware timer that resets the chip if the code stops checking in. Your protection against a frozen flight controller.</td></tr>
+        <tr><td><b>VTOL</b></td><td>Vertical Take-Off and Landing. Takes off like a helicopter, flies like an aeroplane.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================= LOG ================= -->
+<section class="part" id="log">
+  <div class="parthead">
+    <p class="pn">Your build</p>
+    <h2>Build log</h2>
+    <p>Fill this in as you go. The measured numbers matter most &mdash; this guide is full of estimates, and every one you replace with a real measurement from your own aircraft makes it more true.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th class="nw">Date</th><th class="nw">Step</th><th>Measured / what happened</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">&nbsp;</td><td class="mono">02</td><td>Buck output voltage: ________</td></tr>
+        <tr><td class="mono">&nbsp;</td><td class="mono">07</td><td>Axis directions: X ____ Y ____ Z ____</td></tr>
+        <tr><td class="mono">&nbsp;</td><td class="mono">08</td><td>Worst-case loop time: ________ &micro;s</td></tr>
+        <tr><td class="mono">&nbsp;</td><td class="mono">09</td><td>Link-lost detected after: ________ ms</td></tr>
+        <tr><td class="mono">&nbsp;</td><td class="mono">12</td><td>ESC signal-loss timeout: ________ ms</td></tr>
+        <tr><td class="mono">&nbsp;</td><td class="mono">13</td><td>First hover notes:</td></tr>
+        <tr><td class="mono">&nbsp;</td><td class="mono">14</td><td>Final P / I / D:</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================= ASK ================= -->
+<section class="part" id="ask">
+  <div class="parthead">
+    <p class="pn">Keep going</p>
+    <h2>Things worth asking about</h2>
+    <p>This guide is meant to raise questions, not close them. These are the ones this build usually provokes &mdash; ask any of them and the answer gets folded back into this document.</p>
+  </div>
+  <ul>
+    <li>Why 2,000 loops per second and not 8,000? What actually limits it?</li>
+    <li>What would change if I used the better IMU (the ICM-42688-P) instead?</li>
+    <li>How do I read a blackbox log and see the vibration for myself?</li>
+    <li>What exactly happens inside an ESC to make a motor turn?</li>
+    <li>Could I add GPS and position hold? What's involved?</li>
+    <li>How would I design my own ESC board rather than buying them?</li>
+    <li>What's the actual maths inside the Madgwick filter?</li>
+  </ul>
+</section>
+
+<footer>
+  <p><b>Solder to Sky</b> &mdash; a build-along, revision 1, 2026-08-31. Companion to the design-rationale manual in the same repo, which explains <em>why</em> each decision was made rather than what to do.</p>
+  <p>Parts 0 through 2 are written to be built from. Part 3 is a roadmap and has not been flown. Prices, part availability and firmware details drift &mdash; check current sources before ordering, and replace the estimates in this guide with your own measurements as you make them.</p>
+</footer>
+
+</main>
+</div>
+</div>
