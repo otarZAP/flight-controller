@@ -9,5 +9,4 @@ AM32 ESC boards, ExpressLRS link. Proven on a 250mm quad first, VTOL after.
 - [docs/SAFETY.md](docs/SAFETY.md) — the five non-negotiables and how each gets bench-tested
 - [docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md) — what's still undecided
 
-Status: **planning, revision B.** Board settled (Teensy 4.1, no port required). Only genuine
-blocker left is which IMU is physically on hand.
+
